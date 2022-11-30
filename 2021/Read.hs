@@ -1,7 +1,7 @@
 module Read where
 
-readInts :: FilePath -> IO [Int]
-readInts path = do
+readLines :: FilePath -> IO [String]
+readLines path = do
   contents <- readFile path
-  return (map read . lines $ contents)
+  return (lines contents)
 

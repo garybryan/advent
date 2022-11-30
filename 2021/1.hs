@@ -14,7 +14,7 @@ countIncreasesWindow xz@(x:xs)
   | otherwise = (if windowSum xz < windowSum xs then 1 else 0) + countIncreasesWindow xs
 
 main = do
-  singleResult <- runWithInts (show . countIncreases)
+  singleResult <- runWithInts countIncreases
   putStrLn ("Single increases: " ++ singleResult)
-  windowResult <- runWithInts (show . countIncreasesWindow)
+  windowResult <- runWithInts countIncreasesWindow
   putStrLn ("Window increases: " ++ windowResult)
