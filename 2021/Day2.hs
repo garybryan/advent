@@ -23,4 +23,4 @@ getArea (x, y) = x * y
 
 main = do
   result <- run (getArea . getFinalPosition . map parseLine)
-  putStrLn result
+  putStrLn (show result)

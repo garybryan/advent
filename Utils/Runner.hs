@@ -3,14 +3,14 @@ module Utils.Runner where
 import Utils.Read 
 import System.Environment
 
-run :: (Show a) => ([String] -> a) -> IO String
-run lineFn = do
+run :: ([String] -> a) -> IO a
+run linesFn = do
   args <- getArgs
   lines <- readLines (head args)
-  return (show . lineFn $ lines)
+  return (linesFn lines)
 
 
 runWithInts :: ([Int] -> Int) -> IO String
-runWithInts intFn = do
-  result <- run (intFn . map read)
-  return result
+runWithInts intsFn = do
+  result <- run(intsFn . map read)
+  return (show result)
