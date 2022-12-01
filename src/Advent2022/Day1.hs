@@ -3,7 +3,7 @@ module Advent2022.Day1 (main) where
 import qualified Data.Heap as Heap
 import Text.Read (readMaybe)
 
-import Lib.Runner
+import Lib.Read
 
 readLine :: String -> Maybe Int
 readLine l = readMaybe l
@@ -24,10 +24,14 @@ getMaxK k xs = aux (Heap.empty :: Heap.MinHeap Int) xs
 
 main :: FilePath -> IO ()
 main filePath = do
-  caloriesPerElf <- run filePath (getCaloriesByElf . map readLine)
+  fileLines <- readLines filePath
+  let caloriesPerElf = getCaloriesByElf (map readLine fileLines)
+
   let maxCalories = maximum caloriesPerElf
   putStrLn ("Part 1: Max calories for one elf: " ++ (show maxCalories))
+
   let top3MaxCalories = getMaxK 3 caloriesPerElf
   putStrLn ("Part 2: Top 3 calories per elf: " ++ (show top3MaxCalories))
+
   let totalTop3MaxCalories = sum top3MaxCalories
   putStrLn ("Part 2: Top 3 calories per elf: " ++ (show totalTop3MaxCalories))

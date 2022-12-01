@@ -1,6 +1,6 @@
 module Advent2021.Day1 (main) where
 
-import Lib.Runner
+import Lib.Read
 
 countIncreases :: [Int] -> Int
 countIncreases [] = 0
@@ -18,7 +18,10 @@ countIncreasesWindow xz@(_:xs)
 
 main :: FilePath -> IO ()
 main filePath = do
-  singleResult <- runWithInts filePath countIncreases
-  putStrLn ("Single increases: " ++ singleResult)
-  windowResult <- runWithInts filePath countIncreasesWindow
-  putStrLn ("Window increases: " ++ windowResult)
+  counts <- readInts filePath
+
+  let singleResult = countIncreases counts
+  putStrLn ("Single increases: " ++ show singleResult)
+
+  let windowResult = countIncreasesWindow counts
+  putStrLn ("Window increases: " ++ show windowResult)

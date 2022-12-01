@@ -29,7 +29,6 @@ library
       Advent2021.Day2
       Advent2022.Day1
       Lib.Read
-      Lib.Runner
   other-modules:
       Paths_advent
   hs-source-dirs:

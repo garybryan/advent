@@ -1,6 +1,6 @@
 module Advent2021.Day2 (main) where
 
-import Lib.Runner
+import Lib.Read
 
 type Command = (String, Int)
 type Vector = (Int, Int)
@@ -33,8 +33,11 @@ getFinalPositionAim cs = aux (0, 0) 0 (map getCommandVector cs)
 
 main :: FilePath -> IO ()
 main filePath = do
-  commands <- run filePath (map parseLine)
+  fileLines <- readLines filePath
+  let commands = map parseLine fileLines
+
   let result = getArea (getFinalPosition commands)
   putStrLn ("Part 1 result: " ++ show result)
+
   let resultAim = getArea (getFinalPositionAim commands)
   putStrLn ("Part 2 (with aim) result: " ++ show resultAim)
