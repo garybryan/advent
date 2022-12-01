@@ -14,13 +14,22 @@ getCaloriesByElf (Nothing:xs) = 0 : getCaloriesByElf xs
 getCaloriesByElf (Just x:xs) = (x + head rest) : tail rest
   where rest = getCaloriesByElf xs
 
+gtIfJust :: Int -> Maybe Int -> Bool
+gtIfJust _ Nothing  = False
+gtIfJust x (Just y) = x > y
+
 -- Standard k-max elements implementation using a min-heap to store the k largest values.
 getMaxK :: Int -> [Int] -> [Int]
 getMaxK k xs = aux (Heap.empty :: Heap.MinHeap Int) xs
-  where 
-    aux h [] = Heap.toList h
-    aux h (x:xs') = aux (if Heap.size h' > k then (Heap.drop 1 h') else h') xs'
-      where h' = Heap.insert x h
+  where
+    aux :: Heap.MinHeap Int -> [Int] -> [Int]
+    aux h []      = Heap.toList h
+    aux h (x:xs') = aux h' xs'
+      where
+        h'
+          | Heap.size h < k              = Heap.insert x h
+          | x `gtIfJust` Heap.viewHead h = Heap.insert x (Heap.drop 1 h)
+          | otherwise                    = h
 
 main :: FilePath -> IO ()
 main filePath = do
@@ -34,4 +43,4 @@ main filePath = do
   putStrLn ("Part 2: Top 3 calories per elf: " ++ (show top3MaxCalories))
 
   let totalTop3MaxCalories = sum top3MaxCalories
-  putStrLn ("Part 2: Top 3 calories per elf: " ++ (show totalTop3MaxCalories))
+  putStrLn ("Part 2: Total of top 3 calories per elf: " ++ (show totalTop3MaxCalories))
