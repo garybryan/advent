@@ -1,4 +1,6 @@
-import Utils.Runner
+module Advent2021.Day2 (main) where
+
+import Lib.Runner
 
 type Command = (String, Int)
 type Vector = (Int, Int)
@@ -11,6 +13,7 @@ getCommandVector :: Command -> Vector
 getCommandVector ("up", n)      = (-n, 0)
 getCommandVector ("down", n)    = (n, 0)
 getCommandVector ("forward", n) = (0, n)
+getCommandVector (_, _)         = (0, 0)
 
 addVectors :: Vector -> Vector -> Vector
 addVectors a b = (fst a + fst b, snd a + snd b)
@@ -21,6 +24,7 @@ getFinalPosition cs = foldr addVectors (0, 0) (map getCommandVector cs)
 getArea :: Vector -> Int
 getArea (x, y) = x * y
 
-main = do
-  result <- run (getArea . getFinalPosition . map parseLine)
+main :: FilePath -> IO ()
+main filePath = do
+  result <- run filePath (getArea . getFinalPosition . map parseLine)
   putStrLn (show result)
