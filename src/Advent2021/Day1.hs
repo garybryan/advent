@@ -8,9 +8,8 @@ countIncreases [_] = 0
 countIncreases (x:y:xs) = (if x < y then 1 else 0) + countIncreases (y:xs)
 
 windowSum :: Int -> [Int] -> Int
-windowSum k xs = sum (take k xs)
+windowSum k = sum . take k
 
--- Could this be optimised with prefix sums?
 countIncreasesWindow :: Int -> [Int] -> Int
 countIncreasesWindow _ [] = 0
 countIncreasesWindow k xz@(_:xs)

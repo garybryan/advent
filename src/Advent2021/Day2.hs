@@ -19,7 +19,7 @@ addVectors :: Vector -> Vector -> Vector
 addVectors a b = (fst a + fst b, snd a + snd b)
 
 getFinalPosition :: [Command] -> Vector
-getFinalPosition cs = foldl addVectors (0, 0) (map getCommandVector cs)
+getFinalPosition = foldr (addVectors . getCommandVector) (0, 0)
 
 getArea :: Vector -> Int
 getArea (x, y) = x * y

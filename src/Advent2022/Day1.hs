@@ -6,7 +6,7 @@ import Text.Read (readMaybe)
 import Lib.Read (readLines)
 
 readLine :: String -> Maybe Int
-readLine l = readMaybe l
+readLine = readMaybe
 
 getCaloriesByElf :: [Maybe Int] -> [Int]
 getCaloriesByElf [] = [0]
