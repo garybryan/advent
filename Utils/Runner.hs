@@ -1,6 +1,6 @@
-module Runner where
+module Utils.Runner where
 
-import Read 
+import Utils.Read 
 import System.Environment
 
 run :: (Show a) => ([String] -> a) -> IO String

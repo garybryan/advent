@@ -1,4 +1,4 @@
-module Read where
+module Utils.Read where
 
 readLines :: FilePath -> IO [String]
 readLines path = do

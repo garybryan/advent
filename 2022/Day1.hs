@@ -1,4 +1,4 @@
-import Runner
+import Utils.Runner
 import Text.Read
 
 readLine :: String -> Maybe Int

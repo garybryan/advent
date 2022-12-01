@@ -1,4 +1,4 @@
-import Runner
+import Utils.Runner
 
 countIncreases :: [Int] -> Int
 countIncreases [] = 0

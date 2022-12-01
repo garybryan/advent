@@ -1,4 +1,4 @@
-import Runner
+import Utils.Runner
 
 type Command = (String, Int)
 type Vector = (Int, Int)
@@ -22,5 +22,5 @@ getArea :: Vector -> Int
 getArea (x, y) = x * y
 
 main = do
-  result <- run (show . getArea . getFinalPosition . map parseLine)
+  result <- run (getArea . getFinalPosition . map parseLine)
   putStrLn result
