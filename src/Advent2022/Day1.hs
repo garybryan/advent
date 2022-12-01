@@ -14,20 +14,21 @@ getCaloriesByElf (Nothing:xs) = 0 : getCaloriesByElf xs
 getCaloriesByElf (Just x:xs) = (x + head rest) : tail rest
   where rest = getCaloriesByElf xs
 
+-- Needed for type safety as `Heap.viewHead` could be Nothing for an empty heap;
+-- in reality it'll never be empty, but the compiler doesn't know that!
 gtIfJust :: Int -> Maybe Int -> Bool
 gtIfJust _ Nothing  = False
 gtIfJust x (Just y) = x > y
 
 -- Standard k-max elements implementation using a min-heap to store the k largest values.
 getMaxK :: Int -> [Int] -> [Int]
-getMaxK k xs = aux (Heap.empty :: Heap.MinHeap Int) xs
+getMaxK k xs = aux (Heap.fromList (take k xs) :: Heap.MinHeap Int) (drop k xs)
   where
     aux :: Heap.MinHeap Int -> [Int] -> [Int]
     aux h []      = Heap.toList h
     aux h (x:xs') = aux h' xs'
       where
         h'
-          | Heap.size h < k              = Heap.insert x h
           | x `gtIfJust` Heap.viewHead h = Heap.insert x (Heap.drop 1 h)
           | otherwise                    = h
 
