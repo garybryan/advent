@@ -19,12 +19,22 @@ addVectors :: Vector -> Vector -> Vector
 addVectors a b = (fst a + fst b, snd a + snd b)
 
 getFinalPosition :: [Command] -> Vector
-getFinalPosition cs = foldr addVectors (0, 0) (map getCommandVector cs)
+getFinalPosition cs = foldl addVectors (0, 0) (map getCommandVector cs)
 
 getArea :: Vector -> Int
 getArea (x, y) = x * y
 
+getFinalPositionAim :: [Command] -> Vector
+getFinalPositionAim cs = aux (0, 0) 0 (map getCommandVector cs)
+  where
+    aux v _ []                 = v
+    aux (x, y) d ((dd, n):cvs) = aux (x + n, y + d' * n) d' cvs
+      where d' = d + dd
+
 main :: FilePath -> IO ()
 main filePath = do
-  result <- run filePath (getArea . getFinalPosition . map parseLine)
-  putStrLn (show result)
+  commands <- run filePath (map parseLine)
+  let result = getArea (getFinalPosition commands)
+  putStrLn ("Part 1 result: " ++ show result)
+  let resultAim = getArea (getFinalPositionAim commands)
+  putStrLn ("Part 2 (with aim) result: " ++ show resultAim)
