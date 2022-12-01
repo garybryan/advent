@@ -20,17 +20,19 @@ gtIfJust :: Int -> Maybe Int -> Bool
 gtIfJust _ Nothing  = False
 gtIfJust x (Just y) = x > y
 
+type IntHeap = Heap.MinHeap Int
+
 -- Standard k-max elements implementation using a min-heap to store the k largest values.
 getMaxK :: Int -> [Int] -> [Int]
-getMaxK k xs = aux (Heap.fromList (take k xs) :: Heap.MinHeap Int) (drop k xs)
-  where
-    aux :: Heap.MinHeap Int -> [Int] -> [Int]
-    aux h []      = Heap.toList h
-    aux h (x:xs') = aux h' xs'
-      where
-        h'
-          | x `gtIfJust` Heap.viewHead h = Heap.insert x (Heap.drop 1 h)
-          | otherwise                    = h
+getMaxK k xs = Heap.toList (foldl updateHeap initialHeap rest)
+  where 
+    updateHeap :: IntHeap -> Int -> IntHeap
+    updateHeap h x
+      | x `gtIfJust` Heap.viewHead h = Heap.insert x (Heap.drop 1 h)
+      | otherwise                    = h
+    initialHeap = (Heap.fromList (take k xs) :: IntHeap)
+    rest = drop k xs
+    
 
 run :: FilePath -> IO ()
 run filePath = do

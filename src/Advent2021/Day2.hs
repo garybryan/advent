@@ -24,6 +24,7 @@ getFinalPosition = foldr (addVectors . getCommandVector) (0, 0)
 getArea :: Vector -> Int
 getArea (x, y) = x * y
 
+-- This can be done with foldl, but it gets messy, or did when I tried.
 getFinalPositionAim :: [Command] -> Vector
 getFinalPositionAim cs = aux (0, 0) 0 (map getCommandVector cs)
   where
