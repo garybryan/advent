@@ -1,6 +1,6 @@
-module Advent2021.Day1 (main) where
+module Advent2021.Day1 (run) where
 
-import Lib.Read
+import Lib.Read (readInts)
 
 countIncreases :: [Int] -> Int
 countIncreases [] = 0
@@ -17,8 +17,8 @@ countIncreasesWindow k xz@(_:xs)
   | length xz < k = 0
   | otherwise = (if windowSum k xz < windowSum k xs then 1 else 0) + countIncreasesWindow k xs
 
-main :: FilePath -> IO ()
-main filePath = do
+run :: FilePath -> IO ()
+run filePath = do
   counts <- readInts filePath
 
   let singleResult = countIncreases counts

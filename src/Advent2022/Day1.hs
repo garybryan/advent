@@ -1,9 +1,9 @@
-module Advent2022.Day1 (main) where
+module Advent2022.Day1 (run) where
 
 import qualified Data.Heap as Heap
 import Text.Read (readMaybe)
 
-import Lib.Read
+import Lib.Read (readLines)
 
 readLine :: String -> Maybe Int
 readLine l = readMaybe l
@@ -32,8 +32,8 @@ getMaxK k xs = aux (Heap.fromList (take k xs) :: Heap.MinHeap Int) (drop k xs)
           | x `gtIfJust` Heap.viewHead h = Heap.insert x (Heap.drop 1 h)
           | otherwise                    = h
 
-main :: FilePath -> IO ()
-main filePath = do
+run :: FilePath -> IO ()
+run filePath = do
   fileLines <- readLines filePath
   let caloriesPerElf = getCaloriesByElf (map readLine fileLines)
 

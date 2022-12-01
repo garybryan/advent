@@ -1,6 +1,6 @@
-module Advent2021.Day2 (main) where
+module Advent2021.Day2 (run) where
 
-import Lib.Read
+import Lib.Read (readLines)
 
 type Command = (String, Int)
 type Vector = (Int, Int)
@@ -31,8 +31,8 @@ getFinalPositionAim cs = aux (0, 0) 0 (map getCommandVector cs)
     aux (x, y) d ((dd, n):cvs) = aux (x + n, y + d' * n) d' cvs
       where d' = d + dd
 
-main :: FilePath -> IO ()
-main filePath = do
+run :: FilePath -> IO ()
+run filePath = do
   fileLines <- readLines filePath
   let commands = map parseLine fileLines
 
