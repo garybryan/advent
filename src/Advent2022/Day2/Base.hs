@@ -3,6 +3,7 @@ module Advent2022.Day2.Base
     Choice (..),
     ChoiceParseMap,
     ParseMap,
+    Round,
     gameScore,
     lineToChars,
     opponentChoiceMap,
@@ -32,16 +33,19 @@ compareCirc c1 c2
   | c1 == maxBound && c2 == minBound = LT
   | otherwise                        = compare c1 c2
 
-resultScore :: (Choice, Choice) -> Int
+-- Represent a single round as (opponent's choice, user's choice).
+type Round = (Choice, Choice)
+
+resultScore :: Round -> Int
 resultScore (oc, uc) = case compareCirc uc oc of
   GT -> 6
   EQ -> 3
   LT -> 0
 
-roundScore :: (Choice, Choice) -> Int
+roundScore :: Round -> Int
 roundScore (oc, uc) = resultScore (oc, uc) + choiceScore uc
 
-gameScore :: [(Choice, Choice)] -> Int
+gameScore :: [Round] -> Int
 gameScore = sum . map roundScore
 
 type ParseMap a = Map.Map Char a
@@ -68,12 +72,12 @@ lineToChars line =
   )
   where splitLine = words line
 
-scoreFromLines :: ((Char, Char) -> (Choice, Choice)) -> [String] -> Int
+scoreFromLines :: ((Char, Char) -> Round) -> [String] -> Int
 scoreFromLines charsFn = gameScore . map (charsFn . lineToChars)
 
 test :: IO ()
 test = do
-  -- TODO: learn use a proper unit test system for Haskell! This is very DIY.
+  -- TODO: learn to use a proper unit test system for Haskell! This is very DIY.
 
   putStrLn ("Rock score: " ++ show (choiceScore Rock) ++ "; should be 1")
   putStrLn ("Scissors score: " ++ show (choiceScore Scissors) ++ "; should be 3")

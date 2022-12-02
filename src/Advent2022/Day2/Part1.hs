@@ -13,7 +13,7 @@ userChoiceMap = Map.fromList
     ('Z', Scissors)
   ]
 
-charsToRound :: (Char, Char) -> (Choice, Choice)
+charsToRound :: (Char, Char) -> Round
 charsToRound (oc, uc) = 
   (
     parseChar opponentChoiceMap oc,
@@ -33,7 +33,7 @@ test :: IO ()
 test = do
   putStrLn ("Parse X: " ++ show (parseChar userChoiceMap 'X') ++ "; should be Rock")
 
-  putStrLn ("Chars to choices (Y, C): " ++ show (charsToRound ('C', 'Y')) ++ "; should be (Scissors,Paper)")
+  putStrLn ("Chars to choices (C, Y): " ++ show (charsToRound ('C', 'Y')) ++ "; should be (Scissors,Paper)")
 
   let gameLines = ["A Y", "B X", "C Z"]
   putStrLn ("Game from lines: " ++ show (scoreFromLinesPart1 gameLines) ++ "; should be 15")

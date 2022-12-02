@@ -18,7 +18,7 @@ actionMap = Map.fromList
   ]
 
 atOffset :: (Enum a, Bounded a) => Int -> a -> a
-atOffset n e = toEnum ((ei + n) `mod` modulus)
+atOffset o e = toEnum ((ei + o) `mod` modulus)
   where
     modulus = fromEnum (maxBound `asTypeOf` e) + 1
     ei = fromEnum e
@@ -28,7 +28,7 @@ choiceForAction Lose = atOffset (-1)
 choiceForAction Win  = atOffset 1
 choiceForAction Draw = id
 
-charsToRound :: (Char, Char) -> (Choice, Choice)
+charsToRound :: (Char, Char) -> Round
 charsToRound (c, a) = 
   (
     choice,
