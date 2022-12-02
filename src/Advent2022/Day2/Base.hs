@@ -32,17 +32,17 @@ compareCirc c1 c2
   | c1 == maxBound && c2 == minBound = LT
   | otherwise                        = compare c1 c2
 
-resultScore :: Choice -> Choice -> Int
-resultScore oc uc = case compareCirc uc oc of
+resultScore :: (Choice, Choice) -> Int
+resultScore (oc, uc) = case compareCirc uc oc of
   GT -> 6
   EQ -> 3
   LT -> 0
 
-roundScore :: Choice -> Choice -> Int
-roundScore oc uc = resultScore oc uc + choiceScore uc
+roundScore :: (Choice, Choice) -> Int
+roundScore (oc, uc) = resultScore (oc, uc) + choiceScore uc
 
 gameScore :: [(Choice, Choice)] -> Int
-gameScore = sum . map (\(oc, uc) -> roundScore oc uc)
+gameScore = sum . map roundScore
 
 type ParseMap a = Map.Map Char a
 type ChoiceParseMap = ParseMap Choice
@@ -82,13 +82,13 @@ test = do
   putStrLn ("Compare Rock to Paper: " ++ show (compareCirc Rock Paper) ++ "; should be LT")
   putStrLn ("Compare Rock to Rock: " ++ show (compareCirc Rock Rock) ++ "; should be EQ")
 
-  putStrLn ("Rock vs scissors result score: " ++ show (resultScore Rock Scissors) ++ "; should be 6")
-  putStrLn ("Paper vs paper result score: " ++ show (resultScore Paper Paper) ++ "; should be 3")
-  putStrLn ("Paper vs scissors result score: " ++ show (resultScore Paper Scissors) ++ "; should be 0")
+  putStrLn ("Rock vs scissors result score: " ++ show (resultScore (Rock, Scissors)) ++ "; should be 6")
+  putStrLn ("Paper vs paper result score: " ++ show (resultScore (Paper, Paper)) ++ "; should be 3")
+  putStrLn ("Paper vs scissors result score: " ++ show (resultScore (Paper, Scissors)) ++ "; should be 0")
 
-  putStrLn ("Paper vs rock round score: " ++ show (roundScore Paper Rock) ++ "; should be 8")
-  putStrLn ("Rock vs paper round score: " ++ show (roundScore Rock Paper) ++ "; should be 1")
-  putStrLn ("Scissors vs scissors round score: " ++ show (roundScore Scissors Scissors) ++ "; should be 6")
+  putStrLn ("Paper vs rock round score: " ++ show (roundScore (Paper, Rock)) ++ "; should be 8")
+  putStrLn ("Rock vs paper round score: " ++ show (roundScore (Rock, Paper)) ++ "; should be 1")
+  putStrLn ("Scissors vs scissors round score: " ++ show (roundScore (Scissors, Scissors)) ++ "; should be 6")
 
   let game = [(Paper, Rock), (Rock, Paper), (Scissors, Scissors)]
   putStrLn ("Game score: " ++ show (gameScore game) ++ "; should be 15")
