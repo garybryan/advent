@@ -13,37 +13,28 @@ userChoiceMap = Map.fromList
     ('Z', Scissors)
   ]
 
-lineToChars :: String -> (Char, Char)
-lineToChars line =
+charsToRound :: (Char, Char) -> (Choice, Choice)
+charsToRound (oc, uc) = 
   (
-    head (head splitLine),
-    head (last splitLine)
-  )
-  where splitLine = words line
-
-charsToChoices :: (Char, Char) -> (Choice, Choice)
-charsToChoices (oc, uc) = 
-  (
-    parseChoice opponentChoiceMap oc,
-    parseChoice userChoiceMap uc
+    parseChar opponentChoiceMap oc,
+    parseChar userChoiceMap uc
   )
 
-gameScoreFromLines :: [String] -> Int
-gameScoreFromLines = gameScore . map (charsToChoices . lineToChars)
+scoreFromLinesPart1 :: [String] -> Int
+scoreFromLinesPart1 = scoreFromLines charsToRound 
 
 run :: FilePath -> IO ()
 run filePath = do
   fileLines <- readLines filePath
-  let result = gameScoreFromLines fileLines
+  let result = scoreFromLinesPart1 fileLines
   putStrLn ("Part 1 final score: " ++ show result)
 
 test :: IO ()
 test = do
-  putStrLn ("Parse X: " ++ show (parseChoice userChoiceMap 'X') ++ "; should be Rock")
+  putStrLn ("Parse X: " ++ show (parseChar userChoiceMap 'X') ++ "; should be Rock")
 
-  putStrLn ("Line to chars (Y, C): " ++ show (lineToChars "C Y") ++ "; should be ('C','Y')")
-  putStrLn ("Chars to choices (Y, C): " ++ show (charsToChoices ('C', 'Y')) ++ "; should be (Scissors,Paper)")
+  putStrLn ("Chars to choices (Y, C): " ++ show (charsToRound ('C', 'Y')) ++ "; should be (Scissors,Paper)")
 
   let gameLines = ["A Y", "B X", "C Z"]
-  putStrLn ("Game from lines: " ++ show (gameScoreFromLines gameLines))
+  putStrLn ("Game from lines: " ++ show (scoreFromLinesPart1 gameLines) ++ "; should be 15")
 

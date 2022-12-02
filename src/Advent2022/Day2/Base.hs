@@ -4,8 +4,10 @@ module Advent2022.Day2.Base
     ChoiceParseMap,
     ParseMap,
     gameScore,
+    lineToChars,
     opponentChoiceMap,
-    parseChoice,
+    parseChar,
+    scoreFromLines,
     test
   )
   where
@@ -24,14 +26,14 @@ choiceScore :: Choice -> Int
 choiceScore = (+1) . fromEnum
 
 -- TODO could use instance instead of this? It got stuck when I tried though.
-compareChoices :: Choice -> Choice -> Ordering
-compareChoices c1 c2
+compareCirc :: (Bounded a, Ord a) => a -> a -> Ordering
+compareCirc c1 c2
   | c1 == minBound && c2 == maxBound = GT
   | c1 == maxBound && c2 == minBound = LT
   | otherwise                        = compare c1 c2
 
 resultScore :: Choice -> Choice -> Int
-resultScore oc uc = case compareChoices uc oc of
+resultScore oc uc = case compareCirc uc oc of
   GT -> 6
   EQ -> 3
   LT -> 0
@@ -53,10 +55,21 @@ opponentChoiceMap = Map.fromList
     ('C', Scissors)
   ]
 
-parseChoice :: ParseMap a -> Char -> a
-parseChoice cpm c = case Map.lookup c cpm of
+parseChar :: ParseMap a -> Char -> a
+parseChar cpm c = case Map.lookup c cpm of
   Nothing     -> error ("Invalid choice char: " ++ show c)
   Just val    -> val
+
+lineToChars :: String -> (Char, Char)
+lineToChars line =
+  (
+    head (head splitLine),
+    head (last splitLine)
+  )
+  where splitLine = words line
+
+scoreFromLines :: ((Char, Char) -> (Choice, Choice)) -> [String] -> Int
+scoreFromLines charsFn = gameScore . map (charsFn . lineToChars)
 
 test :: IO ()
 test = do
@@ -65,9 +78,9 @@ test = do
   putStrLn ("Rock score: " ++ show (choiceScore Rock) ++ "; should be 1")
   putStrLn ("Scissors score: " ++ show (choiceScore Scissors) ++ "; should be 3")
 
-  putStrLn ("Compare Rock to Scissors: " ++ show (compareChoices Rock Scissors) ++ "; should be GT")
-  putStrLn ("Compare Rock to Paper: " ++ show (compareChoices Rock Paper) ++ "; should be LT")
-  putStrLn ("Compare Rock to Rock: " ++ show (compareChoices Rock Rock) ++ "; should be EQ")
+  putStrLn ("Compare Rock to Scissors: " ++ show (compareCirc Rock Scissors) ++ "; should be GT")
+  putStrLn ("Compare Rock to Paper: " ++ show (compareCirc Rock Paper) ++ "; should be LT")
+  putStrLn ("Compare Rock to Rock: " ++ show (compareCirc Rock Rock) ++ "; should be EQ")
 
   putStrLn ("Rock vs scissors result score: " ++ show (resultScore Rock Scissors) ++ "; should be 6")
   putStrLn ("Paper vs paper result score: " ++ show (resultScore Paper Paper) ++ "; should be 3")
@@ -80,7 +93,17 @@ test = do
   let game = [(Paper, Rock), (Rock, Paper), (Scissors, Scissors)]
   putStrLn ("Game score: " ++ show (gameScore game) ++ "; should be 15")
 
-  putStrLn ("Parse B: " ++ show (parseChoice opponentChoiceMap 'B') ++ "; should be Paper")
+  putStrLn ("Parse B: " ++ show (parseChar opponentChoiceMap 'B') ++ "; should be Paper")
+
+  putStrLn ("Line to chars (C, Y): " ++ show (lineToChars "C Y") ++ "; should be ('C','Y')")
 
   -- TODO test for error
-  -- putStrLn ("Parse unknown: " ++ show (parseChoice opponentChoiceMap 'E') ++ "; should raise error")
+  -- putStrLn ("Parse unknown: " ++ show (parseChar opponentChoiceMap 'E') ++ "; should raise error")
+
+  let gameLines = ["A Y", "B X", "C Z"]
+  putStrLn
+    (
+      "Score from lines with Rock vs Paper every round: "
+      ++ show (scoreFromLines (\_ -> (Rock, Paper)) gameLines)
+      ++ "; should be 24"
+    )

@@ -17,37 +17,44 @@ actionMap = Map.fromList
     ('Z', Win)
   ]
 
-lineToChars :: String -> (Char, Char)
-lineToChars line =
+atOffset :: (Enum a, Bounded a) => Int -> a -> a
+atOffset n e = toEnum ((ei + n) `mod` modulus)
+  where
+    modulus = fromEnum (maxBound `asTypeOf` e) + 1
+    ei = fromEnum e
+
+choiceForAction :: Action -> Choice -> Choice
+choiceForAction Lose = atOffset (-1)
+choiceForAction Win  = atOffset 1
+choiceForAction Draw = id
+
+charsToRound :: (Char, Char) -> (Choice, Choice)
+charsToRound (c, a) = 
   (
-    head (head splitLine),
-    head (last splitLine)
+    choice,
+    choiceForAction (parseChar actionMap a) choice
   )
-  where splitLine = words line
+  where choice = parseChar opponentChoiceMap c
 
--- charsToChoices :: (Char, Char) -> (Choice, Choice)
--- charsToChoices (oc, uc) = 
---   (
---     parseChoice opponentChoiceMap oc,
---     parseChoice userChoiceMap uc
---   )
---
--- gameScoreFromLines :: [String] -> Int
--- gameScoreFromLines = gameScore . map (charsToChoices . lineToChars)
---
--- run :: FilePath -> IO ()
--- run filePath = do
---   fileLines <- readLines filePath
---   let result = gameScoreFromLines fileLines
---   putStrLn ("Part 1 final score: " ++ show result)
+scoreFromLinesPart2 :: [String] -> Int
+scoreFromLinesPart2 = scoreFromLines charsToRound 
 
--- test :: IO ()
--- test = do
---   putStrLn ("Parse X: " ++ show (parseChoice userChoiceMap 'X') ++ "; should be Rock")
---
---   putStrLn ("Line to chars (Y, C): " ++ show (lineToChars "C Y") ++ "; should be ('C','Y')")
---   putStrLn ("Chars to choices (Y, C): " ++ show (charsToChoices ('C', 'Y')) ++ "; should be (Scissors,Paper)")
---
---   let gameLines = ["A Y", "B X", "C Z"]
---   putStrLn ("Game from lines: " ++ show (gameScoreFromLines gameLines))
---
+run :: FilePath -> IO ()
+run filePath = do
+  fileLines <- readLines filePath
+  let result = scoreFromLinesPart2 fileLines
+  putStrLn ("Part 2 final score: " ++ show result)
+
+test :: IO ()
+test = do
+  putStrLn ("Parse X: " ++ show (parseChar actionMap 'X') ++ "; should be Lose")
+
+  putStrLn ("To win against Scissors: " ++ show (choiceForAction Win Scissors) ++ "; should be Rock")
+  putStrLn ("To lose against Rock: " ++ show (choiceForAction Lose Rock) ++ "; should be Scissors")
+  putStrLn ("To draw with Paper: " ++ show (choiceForAction Draw Paper) ++ "; should be Paper")
+
+  putStrLn ("Chars to round (C, Z): " ++ show (charsToRound ('C', 'Z')) ++ "; should be (Scissors,Rock)")
+
+  let gameLines = ["A Y", "B X", "C Z"]
+  putStrLn ("Game from lines: " ++ show (scoreFromLinesPart2 gameLines) ++ "; should be 12")
+
