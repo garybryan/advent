@@ -38,8 +38,8 @@ def test_max_calories(lines):
 
 
 def test_k_max(per_elf):
-    assert set(k_max(3, per_elf)) == {10000, 11000, 24000}
-    assert set(k_max(2, per_elf)) == {11000, 24000}
+    assert set(k_max(3, iter(per_elf))) == {10000, 11000, 24000}
+    assert set(k_max(2, iter(per_elf))) == {11000, 24000}
 
 
 def test_sum_calories_k_elves(lines):
