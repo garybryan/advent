@@ -13,7 +13,7 @@ spec = do
 
   describe "scoreFromLines" $ do
     it "calculates the total score with Rock vs Paper every round" $ do
-      scoreFromLines (\_ -> (Rock, Paper)) ["A Y", "B X", "C Z"] `shouldBe` 24
+      scoreFromLines (const (Rock, Paper)) ["A Y", "B X", "C Z"] `shouldBe` 24
 
   describe "parseChar" $ do
     it "parses a character for an opponent choice" $ do

@@ -1,7 +1,6 @@
 module Advent2022.Day2.Part2Spec (spec) where
 
 import Advent2022.Day2.Part2
-import Control.Exception (evaluate)
 import Test.Hspec
 
 spec :: Spec

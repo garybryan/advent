@@ -1,5 +1,6 @@
 module Advent2021.Day2 (run) where
 
+import Data.Bifunctor (bimap)
 import Lib.Read (readLines)
 
 type Command = (String, Int)
@@ -7,18 +8,18 @@ type Command = (String, Int)
 type Vector = (Int, Int)
 
 parseLine :: String -> Command
-parseLine line = (head splitLine, read (last splitLine))
+parseLine line = (head splitLine, read $ last splitLine)
   where
     splitLine = words line
 
 getCommandVector :: Command -> Vector
-getCommandVector ("up", n) = (- n, 0)
+getCommandVector ("up", n) = (-n, 0)
 getCommandVector ("down", n) = (n, 0)
 getCommandVector ("forward", n) = (0, n)
 getCommandVector (_, _) = (0, 0)
 
 addVectors :: Vector -> Vector -> Vector
-addVectors a b = (fst a + fst b, snd a + snd b)
+addVectors a = Data.Bifunctor.bimap (fst a +) (snd a +)
 
 getFinalPosition :: [Command] -> Vector
 getFinalPosition = foldr (addVectors . getCommandVector) (0, 0)
