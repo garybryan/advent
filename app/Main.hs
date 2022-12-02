@@ -4,7 +4,7 @@ import qualified Advent2021.Day1
 import qualified Advent2021.Day2
 
 import qualified Advent2022.Day1
-import qualified Advent2022.Day2
+import qualified Advent2022.Day2.Part1
 
 main :: IO ()
 main = do
@@ -17,5 +17,5 @@ main = do
   putStrLn("\n2022 day 1:")
   Advent2022.Day1.run "data/2022/1.txt"
 
-  putStrLn("\n2022 day 2:")
-  Advent2022.Day2.run "data/2022/2.txt"
+  putStrLn("\n2022 day 2 part 1:")
+  Advent2022.Day2.Part1.run "data/2022/2.txt"

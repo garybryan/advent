@@ -1,8 +1,15 @@
-module Advent2022.Day2 (main, run) where
+module Advent2022.Day2.Base
+  (
+    Choice (..),
+    ChoiceParseMap,
+    gameScore,
+    opponentChoiceMap,
+    parseChoice,
+    test
+  )
+  where
 
 import qualified Data.Map as Map
-
-import Lib.Read (readLines)
 
 -- Define `N` choices as an enumeration with a circular ordering,
 -- such that choice `k` is always beaten by choice `k + 1 mod N`.
@@ -35,14 +42,6 @@ gameScore = sum . map (\(oc, uc) -> roundScore oc uc)
 
 type ChoiceParseMap = Map.Map Char Choice
 
-userChoiceMap :: ChoiceParseMap
-userChoiceMap = Map.fromList
-  [
-    ('X', Rock),
-    ('Y', Paper),
-    ('Z', Scissors)
-  ]
-
 opponentChoiceMap :: ChoiceParseMap
 opponentChoiceMap = Map.fromList
   [
@@ -56,32 +55,8 @@ parseChoice cpm c = case Map.lookup c cpm of
   Nothing     -> error ("Invalid choice char: " ++ show c)
   Just choice -> choice
 
-lineToChars :: String -> (Char, Char)
-lineToChars line =
-  (
-    head (head splitLine),
-    head (last splitLine)
-  )
-  where splitLine = words line
-
-charsToChoices :: (Char, Char) -> (Choice, Choice)
-charsToChoices (oc, uc) = 
-  (
-    parseChoice opponentChoiceMap oc,
-    parseChoice userChoiceMap uc
-  )
-
-gameScoreFromLines :: [String] -> Int
-gameScoreFromLines = gameScore . map (charsToChoices . lineToChars)
-
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  let result = gameScoreFromLines fileLines
-  putStrLn ("Part 1 final score: " ++ show result)
-
-main :: IO ()
-main = do
+test :: IO ()
+test = do
   -- TODO: learn use a proper unit test system for Haskell! This is very DIY.
 
   putStrLn ("Rock score: " ++ show (choiceScore Rock) ++ "; should be 1")
@@ -103,14 +78,6 @@ main = do
   putStrLn ("Game score: " ++ show (gameScore game) ++ "; should be 15")
 
   putStrLn ("Parse B: " ++ show (parseChoice opponentChoiceMap 'B') ++ "; should be Paper")
-  putStrLn ("Parse X: " ++ show (parseChoice userChoiceMap 'X') ++ "; should be Rock")
 
   -- TODO test for error
   -- putStrLn ("Parse unknown: " ++ show (parseChoice opponentChoiceMap 'E') ++ "; should raise error")
-
-  putStrLn ("Line to chars (Y, C): " ++ show (lineToChars "C Y") ++ "; should be ('C','Y')")
-  putStrLn ("Chars to choices (Y, C): " ++ show (charsToChoices ('C', 'Y')) ++ "; should be (Scissors,Paper)")
-
-  let gameLines = ["A Y", "B X", "C Z"]
-  putStrLn ("Game from lines: " ++ show (gameScoreFromLines gameLines))
-
