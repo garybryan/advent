@@ -1,5 +1,4 @@
 import heapq
-from itertools import islice
 from typing import Iterable, Iterator
 
 
