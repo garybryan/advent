@@ -1,6 +1,6 @@
 module Advent2022.Day1 (run) where
 
-import qualified Data.Heap as Heap
+import qualified Data.Heap as H
 import Text.Read (readMaybe)
 
 import Lib.Read (readLines)
@@ -14,24 +14,26 @@ getCaloriesByElf (Nothing:xs) = 0 : getCaloriesByElf xs
 getCaloriesByElf (Just x:xs) = (x + head rest) : tail rest
   where rest = getCaloriesByElf xs
 
--- Needed for type safety as `Heap.viewHead` could be Nothing for an empty heap;
+-- Needed for type safety as `H.viewHead` could be Nothing for an empty heap;
 -- in reality it'll never be empty, but the compiler doesn't know that!
-gtIfJust :: Int -> Maybe Int -> Bool
+gtIfJust :: (Ord a) => a -> Maybe a -> Bool
 gtIfJust _ Nothing  = False
 gtIfJust x (Just y) = x > y
 
-type IntHeap = Heap.MinHeap Int
+type IntHeap = H.MinHeap Int
 
 -- Standard k-max elements implementation using a min-heap to store the k largest values.
+-- Sorting the list and returning the top k values is O(n log n), but this is O(n log k)
+-- since it only stores k elements on the heap, and even better in the average case of a
+-- non-ascending list since heap operations are only done when needed.
 getMaxK :: Int -> [Int] -> [Int]
-getMaxK k xs = Heap.toList (foldl updateHeap initialHeap rest)
+getMaxK k xs = H.toList (foldl updateHeap initialHeap rest)
   where 
-    updateHeap :: IntHeap -> Int -> IntHeap
-    updateHeap h x
-      | x `gtIfJust` Heap.viewHead h = Heap.insert x (Heap.drop 1 h)
-      | otherwise                    = h
-    initialHeap = (Heap.fromList (take k xs) :: IntHeap)
+    initialHeap = (H.fromList (take k xs) :: IntHeap)
     rest = drop k xs
+    updateHeap h x
+      | x `gtIfJust` H.viewHead h = H.insert x (H.drop 1 h)
+      | otherwise                 = h
     
 
 run :: FilePath -> IO ()

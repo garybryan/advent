@@ -4,6 +4,7 @@ import qualified Data.Vector as V
 
 import Lib.Read (readInts)
 
+-- TODO use fold?
 countIncreases :: [Int] -> Int
 countIncreases [] = 0
 countIncreases [_] = 0
