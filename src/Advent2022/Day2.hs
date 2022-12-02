@@ -11,17 +11,18 @@ choiceScore Rock     = 1
 choiceScore Paper    = 2
 choiceScore Scissors = 3
 
-beats :: Choice -> Choice -> Bool
-beats Rock Scissors  = True
-beats Scissors Paper = True
-beats Paper Rock     = True
-beats _ _            = False
+-- Choices define a circular ordering: P beats R, S beats P, R beats S.
+-- TODO could use a circular ordering class?
+compareChoices :: Choice -> Choice -> Ordering
+compareChoices Scissors Rock  = LT
+compareChoices Rock Scissors  = GT
+compareChoices c1 c2          = compare c1 c2
 
 resultScore :: Choice -> Choice -> Int
-resultScore oc uc
-  | uc `beats` oc = 6
-  | uc == oc      = 3
-  | otherwise     = 0
+resultScore oc uc = case compareChoices uc oc of
+  GT -> 6
+  EQ -> 3
+  LT -> 0
 
 roundScore :: Choice -> Choice -> Int
 roundScore oc uc = resultScore oc uc + choiceScore uc
@@ -49,7 +50,7 @@ opponentChoiceMap = Map.fromList
 
 parseChoice :: ChoiceParseMap -> Char -> Choice
 parseChoice cpm c = case Map.lookup c cpm of
-  Nothing -> error ("Invalid choice char: " ++ show c)
+  Nothing     -> error ("Invalid choice char: " ++ show c)
   Just choice -> choice
 
 lineToChars :: String -> (Char, Char)
@@ -83,8 +84,9 @@ main = do
   putStrLn ("Rock score: " ++ show (choiceScore Rock) ++ "; should be 1")
   putStrLn ("Scissors score: " ++ show (choiceScore Scissors) ++ "; should be 3")
 
-  putStrLn ("Rock beats scissors: " ++ show (Rock `beats` Scissors) ++ "; should be True")
-  putStrLn ("Rock beats paper: " ++ show (Rock `beats` Paper) ++ "; should be False")
+  putStrLn ("Compare Rock to Scissors: " ++ show (compareChoices Rock Scissors) ++ "; should be GT")
+  putStrLn ("Compare Rock to Paper: " ++ show (compareChoices Rock Paper) ++ "; should be LT")
+  putStrLn ("Compare Rock to Rock: " ++ show (compareChoices Rock Rock) ++ "; should be EQ")
 
   putStrLn ("Rock vs scissors result score: " ++ show (resultScore Rock Scissors) ++ "; should be 6")
   putStrLn ("Paper vs paper result score: " ++ show (resultScore Paper Paper) ++ "; should be 3")
