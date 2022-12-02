@@ -4,19 +4,22 @@ import qualified Data.Map as Map
 
 import Lib.Read (readLines)
 
-data Choice = Rock | Paper | Scissors deriving (Eq, Ord, Show)
+-- Define `N` choices as an enumeration with a circular ordering,
+-- such that choice `k` is always beaten by choice `k + 1 mod N`.
+-- This allows us to use comparison to check which choice wins,
+-- and easily get the choice required to win or lose against another choice
+-- by getting the successor or predecessor respectively, again `mod N`.
+-- The choices are also ordered such that the score for choice `k` is `k + 1`.
+data Choice = Rock | Paper | Scissors deriving (Bounded, Eq, Ord, Enum, Show)
 
 choiceScore :: Choice -> Int
-choiceScore Rock     = 1
-choiceScore Paper    = 2
-choiceScore Scissors = 3
+choiceScore = (+1) . fromEnum
 
--- Choices define a circular ordering: P beats R, S beats P, R beats S.
--- TODO could use a circular ordering class?
 compareChoices :: Choice -> Choice -> Ordering
-compareChoices Scissors Rock  = LT
-compareChoices Rock Scissors  = GT
-compareChoices c1 c2          = compare c1 c2
+compareChoices c1 c2
+  | c1 == minBound && c2 == maxBound = GT
+  | c1 == maxBound && c2 == minBound = LT
+  | otherwise                        = compare c1 c2
 
 resultScore :: Choice -> Choice -> Int
 resultScore oc uc = case compareChoices uc oc of
