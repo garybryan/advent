@@ -25,7 +25,6 @@ data Choice = Rock | Paper | Scissors deriving (Bounded, Eq, Ord, Enum, Show)
 choiceScore :: Choice -> Int
 choiceScore = (+1) . fromEnum
 
--- TODO could use instance instead of this? It got stuck when I tried though.
 compareCirc :: (Bounded a, Ord a) => a -> a -> Ordering
 compareCirc c1 c2
   | c1 == minBound && c2 == maxBound = GT
