@@ -2,6 +2,7 @@ module Advent2022.Day2.Base
   (
     Choice (..),
     ChoiceParseMap,
+    ParseMap,
     gameScore,
     opponentChoiceMap,
     parseChoice,
@@ -22,6 +23,7 @@ data Choice = Rock | Paper | Scissors deriving (Bounded, Eq, Ord, Enum, Show)
 choiceScore :: Choice -> Int
 choiceScore = (+1) . fromEnum
 
+-- TODO could use instance instead of this? It got stuck when I tried though.
 compareChoices :: Choice -> Choice -> Ordering
 compareChoices c1 c2
   | c1 == minBound && c2 == maxBound = GT
@@ -40,7 +42,8 @@ roundScore oc uc = resultScore oc uc + choiceScore uc
 gameScore :: [(Choice, Choice)] -> Int
 gameScore = sum . map (\(oc, uc) -> roundScore oc uc)
 
-type ChoiceParseMap = Map.Map Char Choice
+type ParseMap a = Map.Map Char a
+type ChoiceParseMap = ParseMap Choice
 
 opponentChoiceMap :: ChoiceParseMap
 opponentChoiceMap = Map.fromList
@@ -50,10 +53,10 @@ opponentChoiceMap = Map.fromList
     ('C', Scissors)
   ]
 
-parseChoice :: ChoiceParseMap -> Char -> Choice
+parseChoice :: ParseMap a -> Char -> a
 parseChoice cpm c = case Map.lookup c cpm of
   Nothing     -> error ("Invalid choice char: " ++ show c)
-  Just choice -> choice
+  Just val    -> val
 
 test :: IO ()
 test = do
