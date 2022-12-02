@@ -1,6 +1,5 @@
 module Advent2022.Day2.Base
-  (
-    Choice (..),
+  ( Choice (..),
     ChoiceParseMap,
     ParseMap,
     Round,
@@ -8,9 +7,9 @@ module Advent2022.Day2.Base
     lineToChars,
     opponentChoiceMap,
     parseChar,
-    scoreFromLines
+    scoreFromLines,
   )
-  where
+where
 
 import qualified Data.Map as Map
 
@@ -23,13 +22,13 @@ import qualified Data.Map as Map
 data Choice = Rock | Paper | Scissors deriving (Bounded, Eq, Ord, Enum, Show)
 
 choiceScore :: Choice -> Int
-choiceScore = (+1) . fromEnum
+choiceScore = (+ 1) . fromEnum
 
 compareCirc :: (Bounded a, Ord a) => a -> a -> Ordering
 compareCirc c1 c2
   | c1 == minBound && c2 == maxBound = GT
   | c1 == maxBound && c2 == minBound = LT
-  | otherwise                        = compare c1 c2
+  | otherwise = compare c1 c2
 
 -- Represent a single round as (opponent's choice, user's choice).
 type Round = (Choice, Choice)
@@ -47,28 +46,29 @@ gameScore :: [Round] -> Int
 gameScore = sum . map roundScore
 
 type ParseMap a = Map.Map Char a
+
 type ChoiceParseMap = ParseMap Choice
 
 opponentChoiceMap :: ChoiceParseMap
-opponentChoiceMap = Map.fromList
-  [
-    ('A', Rock),
-    ('B', Paper),
-    ('C', Scissors)
-  ]
+opponentChoiceMap =
+  Map.fromList
+    [ ('A', Rock),
+      ('B', Paper),
+      ('C', Scissors)
+    ]
 
 parseChar :: ParseMap a -> Char -> a
 parseChar cpm c = case Map.lookup c cpm of
-  Nothing     -> error ("Invalid char: " ++ show c)
-  Just val    -> val
+  Nothing -> error ("Invalid char: " ++ show c)
+  Just val -> val
 
 lineToChars :: String -> (Char, Char)
 lineToChars line =
-  (
-    head (head splitLine),
+  ( head (head splitLine),
     head (last splitLine)
   )
-  where splitLine = words line
+  where
+    splitLine = words line
 
 scoreFromLines :: ((Char, Char) -> Round) -> [String] -> Int
 scoreFromLines charsFn = gameScore . map (charsFn . lineToChars)

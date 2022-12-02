@@ -9,4 +9,3 @@ readInts :: FilePath -> IO [Int]
 readInts path = do
   fileLines <- readLines path
   return (map read fileLines)
-

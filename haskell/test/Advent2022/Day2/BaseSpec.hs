@@ -1,9 +1,8 @@
 module Advent2022.Day2.BaseSpec (spec) where
 
+import Advent2022.Day2.Base
 import Control.Exception (evaluate)
 import Test.Hspec
-
-import Advent2022.Day2.Base
 
 spec :: Spec
 spec = do
@@ -21,5 +20,4 @@ spec = do
       parseChar opponentChoiceMap 'B' `shouldBe` Paper
 
     it "throws an exception if trying to parse an invalid character" $ do
-     evaluate (parseChar opponentChoiceMap 'E') `shouldThrow` errorCall "Invalid char: 'E'"
-      
+      evaluate (parseChar opponentChoiceMap 'E') `shouldThrow` errorCall "Invalid char: 'E'"

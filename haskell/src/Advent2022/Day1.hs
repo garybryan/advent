@@ -1,23 +1,23 @@
 module Advent2022.Day1 (run) where
 
 import qualified Data.Heap as H
-import Text.Read (readMaybe)
-
 import Lib.Read (readLines)
+import Text.Read (readMaybe)
 
 readLine :: String -> Maybe Int
 readLine = readMaybe
 
 getCaloriesByElf :: [Maybe Int] -> [Int]
 getCaloriesByElf [] = [0]
-getCaloriesByElf (Nothing:xs) = 0 : getCaloriesByElf xs
-getCaloriesByElf (Just x:xs) = (x + head rest) : tail rest
-  where rest = getCaloriesByElf xs
+getCaloriesByElf (Nothing : xs) = 0 : getCaloriesByElf xs
+getCaloriesByElf (Just x : xs) = (x + head rest) : tail rest
+  where
+    rest = getCaloriesByElf xs
 
 -- Needed for type safety as `H.viewHead` could be Nothing for an empty heap;
 -- in reality it'll never be empty, but the compiler doesn't know that!
 gtIfJust :: (Ord a) => a -> Maybe a -> Bool
-gtIfJust _ Nothing  = False
+gtIfJust _ Nothing = False
 gtIfJust x (Just y) = x > y
 
 type IntHeap = H.MinHeap Int
@@ -28,13 +28,12 @@ type IntHeap = H.MinHeap Int
 -- non-ascending list since heap operations are only done when needed.
 getMaxK :: Int -> [Int] -> [Int]
 getMaxK k xs = H.toList (foldl updateHeap initialHeap rest)
-  where 
+  where
     initialHeap = (H.fromList (take k xs) :: IntHeap)
     rest = drop k xs
     updateHeap h x
       | x `gtIfJust` H.viewHead h = H.insert x (H.drop 1 h)
-      | otherwise                 = h
-    
+      | otherwise = h
 
 run :: FilePath -> IO ()
 run filePath = do
