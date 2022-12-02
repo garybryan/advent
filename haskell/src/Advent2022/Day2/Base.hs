@@ -8,8 +8,7 @@ module Advent2022.Day2.Base
     lineToChars,
     opponentChoiceMap,
     parseChar,
-    scoreFromLines,
-    test
+    scoreFromLines
   )
   where
 
@@ -61,7 +60,7 @@ opponentChoiceMap = Map.fromList
 
 parseChar :: ParseMap a -> Char -> a
 parseChar cpm c = case Map.lookup c cpm of
-  Nothing     -> error ("Invalid choice char: " ++ show c)
+  Nothing     -> error ("Invalid char: " ++ show c)
   Just val    -> val
 
 lineToChars :: String -> (Char, Char)
@@ -74,40 +73,3 @@ lineToChars line =
 
 scoreFromLines :: ((Char, Char) -> Round) -> [String] -> Int
 scoreFromLines charsFn = gameScore . map (charsFn . lineToChars)
-
-test :: IO ()
-test = do
-  -- TODO: learn to use a proper unit test system for Haskell! This is very DIY.
-
-  putStrLn ("Rock score: " ++ show (choiceScore Rock) ++ "; should be 1")
-  putStrLn ("Scissors score: " ++ show (choiceScore Scissors) ++ "; should be 3")
-
-  putStrLn ("Compare Rock to Scissors: " ++ show (compareCirc Rock Scissors) ++ "; should be GT")
-  putStrLn ("Compare Rock to Paper: " ++ show (compareCirc Rock Paper) ++ "; should be LT")
-  putStrLn ("Compare Rock to Rock: " ++ show (compareCirc Rock Rock) ++ "; should be EQ")
-
-  putStrLn ("Rock vs scissors result score: " ++ show (resultScore (Rock, Scissors)) ++ "; should be 6")
-  putStrLn ("Paper vs paper result score: " ++ show (resultScore (Paper, Paper)) ++ "; should be 3")
-  putStrLn ("Paper vs scissors result score: " ++ show (resultScore (Paper, Scissors)) ++ "; should be 0")
-
-  putStrLn ("Paper vs rock round score: " ++ show (roundScore (Paper, Rock)) ++ "; should be 8")
-  putStrLn ("Rock vs paper round score: " ++ show (roundScore (Rock, Paper)) ++ "; should be 1")
-  putStrLn ("Scissors vs scissors round score: " ++ show (roundScore (Scissors, Scissors)) ++ "; should be 6")
-
-  let game = [(Paper, Rock), (Rock, Paper), (Scissors, Scissors)]
-  putStrLn ("Game score: " ++ show (gameScore game) ++ "; should be 15")
-
-  putStrLn ("Parse B: " ++ show (parseChar opponentChoiceMap 'B') ++ "; should be Paper")
-
-  putStrLn ("Line to chars (C, Y): " ++ show (lineToChars "C Y") ++ "; should be ('C','Y')")
-
-  -- TODO test for error
-  -- putStrLn ("Parse unknown: " ++ show (parseChar opponentChoiceMap 'E') ++ "; should raise error")
-
-  let gameLines = ["A Y", "B X", "C Z"]
-  putStrLn
-    (
-      "Score from lines with Rock vs Paper every round: "
-      ++ show (scoreFromLines (\_ -> (Rock, Paper)) gameLines)
-      ++ "; should be 24"
-    )

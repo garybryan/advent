@@ -1,9 +1,9 @@
-module Advent2022.Day2.Part2 (run, test) where
+module Advent2022.Day2.Part2 (run, scoreFromLinesPart2) where
 
 import qualified Data.Map as Map
 
 import Lib.Read (readLines)
-import Advent2022.Day2.Base hiding (test)
+import Advent2022.Day2.Base
 
 data Action = Lose | Draw | Win deriving (Eq, Show)
 
@@ -44,17 +44,3 @@ run filePath = do
   fileLines <- readLines filePath
   let result = scoreFromLinesPart2 fileLines
   putStrLn ("Part 2 final score: " ++ show result)
-
-test :: IO ()
-test = do
-  putStrLn ("Parse X: " ++ show (parseChar actionMap 'X') ++ "; should be Lose")
-
-  putStrLn ("To win against Scissors: " ++ show (choiceForAction Win Scissors) ++ "; should be Rock")
-  putStrLn ("To lose against Rock: " ++ show (choiceForAction Lose Rock) ++ "; should be Scissors")
-  putStrLn ("To draw with Paper: " ++ show (choiceForAction Draw Paper) ++ "; should be Paper")
-
-  putStrLn ("Chars to round (C, Z): " ++ show (charsToRound ('C', 'Z')) ++ "; should be (Scissors,Rock)")
-
-  let gameLines = ["A Y", "B X", "C Z"]
-  putStrLn ("Game from lines: " ++ show (scoreFromLinesPart2 gameLines) ++ "; should be 12")
-
