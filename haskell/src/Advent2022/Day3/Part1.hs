@@ -22,4 +22,4 @@ run filePath = do
   fileLines <- readLines filePath
 
   let totalPriority = commonCompartmentItemsPriority fileLines
-  putStrLn $ "Part 1: Total priority of common items in compartments: " ++ show totalPriority
+  putStrLn $ "Total priority of common items in compartments: " ++ show totalPriority

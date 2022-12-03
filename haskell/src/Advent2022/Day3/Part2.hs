@@ -15,4 +15,4 @@ run filePath = do
   fileLines <- readLines filePath
 
   let priority3s = priorityGroupsOf3 fileLines
-  putStrLn $ "Part 2: Total priority of common items in groups of 3: " ++ show priority3s
+  putStrLn $ "Total priority of common items in groups of 3: " ++ show priority3s
