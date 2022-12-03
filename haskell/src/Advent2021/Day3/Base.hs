@@ -1,4 +1,4 @@
-module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent) where
+module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent, gammaRate) where
 
 binCharToInt :: Char -> Int
 binCharToInt c
@@ -6,8 +6,11 @@ binCharToInt c
   | c == '1' = 1
   | otherwise = error $ "Invalid binary digit: " ++ show c
 
+binNumsToInt :: [Int] -> Int
+binNumsToInt = foldl1 (\a n -> a * 2 + n)
+
 binStrToInt :: String -> Int
-binStrToInt = foldl1 (\a n -> a * 2 + n) . map binCharToInt
+binStrToInt = binNumsToInt . map binCharToInt
 
 -- Make a blank frequency list for `k` bits.
 initialFreqs :: Int -> [Int]
@@ -39,3 +42,6 @@ mostFrequent :: Int -> [Int] -> [Int]
 mostFrequent k xs = mostFrequentInFreqs n (bitFreqs k xs)
   where
     n = length xs
+
+gammaRate :: Int -> [Int] -> Int
+gammaRate k = binNumsToInt . mostFrequent k

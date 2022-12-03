@@ -20,3 +20,6 @@ spec = do
       mostFrequent 5 [5] `shouldBe` [0, 0, 1, 0, 1]
       mostFrequent 5 [10, 8, 9, 3, 1] `shouldBe` [0, 1, 0, 0, 1]
 
+  describe "gammaRate" $ do
+    it "Gets the gamma rate for a list of integers" $ do
+      gammaRate 5 [4, 30, 22, 23, 21, 15, 7, 28, 16, 25, 2, 10] `shouldBe` 22
