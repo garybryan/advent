@@ -29,3 +29,8 @@ spec = do
       -- ghc gives a syntax error when I try to spread this over multiple lines...
       let rucksacks = ["vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg", "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"]
       commonItemsPriority rucksacks `shouldBe` 157
+
+  describe "commonItemAll" $ do
+    it "Finds the first common items in multiple lists" $ do
+      let rucksacks = ["vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg"]
+      commonItemAll rucksacks `shouldBe` 'r'

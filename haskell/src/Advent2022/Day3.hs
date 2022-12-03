@@ -1,4 +1,4 @@
-module Advent2022.Day3 (priority, commonItemPriority, commonItemsPriority, run) where
+module Advent2022.Day3 (priority, commonItemPriority, commonItemAll, commonItemsPriority, run) where
 
 import Data.Char (ord)
 import qualified Data.Set as Set
@@ -34,13 +34,19 @@ commonItems s1 = filter (`Set.member` s1set)
   where
     s1set = Set.fromList s1
 
+commonItemsAll :: [String] -> String
+commonItemsAll = foldr1 commonItems
+
 -- This finds the first common item if there are several, which again is fine:
 -- we're given the constraint that there's always exactly one.
-commonItem :: (String, String) -> Char
-commonItem (s1, s2) = head $ commonItems s1 s2
+commonItemAll :: [String] -> Char
+commonItemAll = head . commonItemsAll
+
+commonItemPair :: (String, String) -> Char
+commonItemPair (s1, s2) = commonItemAll [s1, s2]
 
 commonItemPriority :: String -> Int
-commonItemPriority = priority . commonItem . splitRucksack
+commonItemPriority = priority . commonItemPair . splitRucksack
 
 commonItemsPriority :: [String] -> Int
 commonItemsPriority = sum . map commonItemPriority
