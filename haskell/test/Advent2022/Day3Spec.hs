@@ -18,3 +18,7 @@ spec = do
     it "throws an error on an invalid character" $ do
       priority 'L' `shouldBe` 38
       evaluate (priority '.') `shouldThrow` errorCall "Invalid character: '.'"
+
+  describe "findCommonItem" $ do
+    it "Finds the first common item in a rucksack" $ do
+      findCommonItem ("abcde", "ysba") `shouldBe` 'b'
