@@ -1,4 +1,4 @@
-module Advent2022.Day3 (priority, findCommonItem) where
+module Advent2022.Day3 (priority, findCommonItem, commonItemPriority) where
 
 import Data.Char (ord)
 import qualified Data.Set as Set
@@ -34,3 +34,6 @@ findCommonItem :: (String, String) -> Char
 findCommonItem (s1, s2) = head $ filter (`Set.member` s1set) s2
   where
     s1set = Set.fromList s1
+
+commonItemPriority :: String -> Int
+commonItemPriority = priority . findCommonItem . splitRucksack

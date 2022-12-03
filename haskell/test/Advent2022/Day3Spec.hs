@@ -19,6 +19,7 @@ spec = do
       priority 'L' `shouldBe` 38
       evaluate (priority '.') `shouldThrow` errorCall "Invalid character: '.'"
 
-  describe "findCommonItem" $ do
-    it "Finds the first common item in a rucksack" $ do
-      findCommonItem ("abcde", "ysba") `shouldBe` 'b'
+  describe "commonItemPriority" $ do
+    it "Finds the priority of the common item" $ do
+      commonItemPriority "vJrwpWtwJgWrhcsFMMfFFhFpb" `shouldBe` 16
+      commonItemPriority "PmmdzqPrVvPwwTWBwg" `shouldBe` 42
