@@ -1,4 +1,6 @@
-module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent, gammaRate) where
+module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent, gammaRate, epsilonRate) where
+
+import Data.Bits
 
 binCharToInt :: Char -> Int
 binCharToInt c
@@ -45,3 +47,11 @@ mostFrequent k xs = mostFrequentInFreqs n (bitFreqs k xs)
 
 gammaRate :: Int -> [Int] -> Int
 gammaRate k = binNumsToInt . mostFrequent k
+
+-- Get epsilon rate from gamma rate by flipping the bits.
+-- Needs the total number of bits to remove trailing 1s after the most significant.
+-- Of course, we could also just do the opposite of `binNumsToInt` with the frequency array...
+epsilonRate :: Int -> Int -> Int
+epsilonRate k = (.&. mask) . complement
+  where
+    mask = 2 ^ k - 1
