@@ -1,4 +1,4 @@
-module Advent2022.Day3 (priority, commonItemPriority, commonItemAll, commonItemsPriority, run) where
+module Advent2022.Day3 (priority, commonItemPriority, commonItemsPriority, priorityGroupsOf3, run) where
 
 import Data.Char (ord)
 import qualified Data.Set as Set
@@ -51,8 +51,19 @@ commonItemPriority = priority . commonItemPair . splitRucksack
 commonItemsPriority :: [String] -> Int
 commonItemsPriority = sum . map commonItemPriority
 
+groupsOf :: Int -> [a] -> [[a]]
+groupsOf _ [] = []
+groupsOf k l = take k l : groupsOf k (drop k l)
+
+priorityGroupsOf3 :: [String] -> Int
+priorityGroupsOf3 = sum . map (priority . commonItemAll) . groupsOf 3
+
 run :: FilePath -> IO ()
 run filePath = do
   fileLines <- readLines filePath
+
   let totalPriority = commonItemsPriority fileLines
-  putStrLn $ "Part 1: Total priority of common items: " ++ show totalPriority
+  putStrLn $ "Part 1: Total priority of common items in compartments: " ++ show totalPriority
+
+  let priority3s = priorityGroupsOf3 fileLines
+  putStrLn $ "Part 2: Total priority of common items in groups of 3: " ++ show priority3s
