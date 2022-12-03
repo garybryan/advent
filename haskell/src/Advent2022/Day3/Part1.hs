@@ -4,7 +4,7 @@ import Advent2022.Day3.Base
 import Lib.Read (readLines)
 
 -- An odd-sized rucksack will have a bigger second compartment with this logic,
--- but the question says that all have even length (same number in each compartment)
+-- but the question says that all have even length (same number in each compartment).
 splitRucksack :: String -> (String, String)
 splitRucksack s = splitAt (length s `div` 2) s
 
