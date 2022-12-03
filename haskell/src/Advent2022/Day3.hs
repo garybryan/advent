@@ -1,4 +1,4 @@
-module Advent2022.Day3 (priority, commonItemPriority, commonItemsPriority, priorityGroupsOf3, run) where
+module Advent2022.Day3 (priority, commonCompartmentItemPriority, commonCompartmentItemsPriority, priorityGroupsOf3, run) where
 
 import Data.Char (ord)
 import qualified Data.Set as Set
@@ -42,14 +42,14 @@ commonItemsAll = foldr1 commonItems
 commonItemAll :: [String] -> Char
 commonItemAll = head . commonItemsAll
 
-commonItemPair :: (String, String) -> Char
-commonItemPair (s1, s2) = commonItemAll [s1, s2]
+commonCompartmentItem :: (String, String) -> Char
+commonCompartmentItem (s1, s2) = commonItemAll [s1, s2]
 
-commonItemPriority :: String -> Int
-commonItemPriority = priority . commonItemPair . splitRucksack
+commonCompartmentItemPriority :: String -> Int
+commonCompartmentItemPriority = priority . commonCompartmentItem . splitRucksack
 
-commonItemsPriority :: [String] -> Int
-commonItemsPriority = sum . map commonItemPriority
+commonCompartmentItemsPriority :: [String] -> Int
+commonCompartmentItemsPriority = sum . map commonCompartmentItemPriority
 
 groupsOf :: Int -> [a] -> [[a]]
 groupsOf _ [] = []
@@ -62,7 +62,7 @@ run :: FilePath -> IO ()
 run filePath = do
   fileLines <- readLines filePath
 
-  let totalPriority = commonItemsPriority fileLines
+  let totalPriority = commonCompartmentItemsPriority fileLines
   putStrLn $ "Part 1: Total priority of common items in compartments: " ++ show totalPriority
 
   let priority3s = priorityGroupsOf3 fileLines

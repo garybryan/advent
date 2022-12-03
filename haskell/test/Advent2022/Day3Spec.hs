@@ -19,16 +19,16 @@ spec = do
       priority 'L' `shouldBe` 38
       evaluate (priority '.') `shouldThrow` errorCall "Invalid character: '.'"
 
-  describe "commonItemPriority" $ do
+  describe "commonCompartmentItemPriority" $ do
     it "Finds the priority of the common item" $ do
-      commonItemPriority "vJrwpWtwJgWrhcsFMMfFFhFpb" `shouldBe` 16
-      commonItemPriority "PmmdzqPrVvPwwTWBwg" `shouldBe` 42
+      commonCompartmentItemPriority "vJrwpWtwJgWrhcsFMMfFFhFpb" `shouldBe` 16
+      commonCompartmentItemPriority "PmmdzqPrVvPwwTWBwg" `shouldBe` 42
 
-  describe "commonItemsPriority" $ do
+  describe "commonCompartmentItemsPriority" $ do
     it "Finds the sum of priorities of the common item in each rucksack" $ do
       -- ghc gives a syntax error when I try to spread this over multiple lines...
       let rucksacks = ["vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg", "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"]
-      commonItemsPriority rucksacks `shouldBe` 157
+      commonCompartmentItemsPriority rucksacks `shouldBe` 157
 
   describe "priorityGroupsOf3" $ do
     it "Finds the first common items in multiple lists" $ do
