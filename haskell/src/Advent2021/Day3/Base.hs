@@ -1,4 +1,4 @@
-module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent, gammaRate, epsilonRate) where
+module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent, gammaRate, epsilonRate, powerConsumption) where
 
 import Data.Bits
 
@@ -55,3 +55,8 @@ epsilonRate :: Int -> Int -> Int
 epsilonRate k = (.&. mask) . complement
   where
     mask = 2 ^ k - 1
+
+powerConsumption :: Int -> [Int] -> Int
+powerConsumption k xs = g * epsilonRate k g
+  where
+    g = gammaRate k xs

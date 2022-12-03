@@ -28,3 +28,7 @@ spec = do
     it "Gets the epsilon rate for a gamma rate" $ do
       epsilonRate 5 22 `shouldBe` 9
       epsilonRate 8 0 `shouldBe` 255
+
+  describe "power consumption" $ do
+    it "Gets the power consumption for a list of integers" $ do
+      powerConsumption 5 [4, 30, 22, 23, 21, 15, 7, 28, 16, 25, 2, 10] `shouldBe` 198
