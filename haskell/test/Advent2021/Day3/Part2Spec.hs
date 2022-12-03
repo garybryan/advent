@@ -13,7 +13,13 @@ spec = do
     it "Gets the most common bit in a given position in a list of numbers" $ do
       mostCommonInPos 0 [1, 2, 3] `shouldBe` 1
       mostCommonInPos 1 [1, 2, 3] `shouldBe` 1
-      mostCommonInPos 2 [1, 2, 3] `shouldBe` 0
+      mostCommonInPos 2 [1, 2, 3, 4] `shouldBe` 0
 
     it "Gives 1 if 1 and 0 are equally common" $ do
       mostCommonInPos 1 [1, 2, 3, 4] `shouldBe` 1
+
+  describe "filterToMostCommonInPos" $ do
+    it "Filters numbers to the ones with the most common bit in the given position" $ do
+      filterToMostCommonInPos 0 [1, 2, 3] `shouldBe` [1, 3]
+      filterToMostCommonInPos 1 [1, 2, 3, 4] `shouldBe` [2, 3]
+      filterToMostCommonInPos 2 [1, 2, 3, 4] `shouldBe` [1, 2, 3]

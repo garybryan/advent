@@ -1,7 +1,8 @@
 module Advent2021.Day3.Part2
   ( matchBit,
     filterOnBit,
-    mostCommonInPos
+    mostCommonInPos,
+    filterToMostCommonInPos,
   )
 where
 
@@ -17,7 +18,10 @@ filterOnBit :: Int -> Int -> [Int] -> [Int]
 filterOnBit i v = filter $ matchBit i v
 
 onesInPos :: Int -> [Int] -> Int
-onesInPos i = sum . filterOnBit i 1
+onesInPos i = length . filterOnBit i 1
 
 mostCommonInPos :: Int -> [Int] -> Int
 mostCommonInPos i xs = fromEnum $ onesInPos i xs >= length xs `div` 2
+
+filterToMostCommonInPos :: Int -> [Int] -> [Int]
+filterToMostCommonInPos i xs = filterOnBit i (mostCommonInPos i xs) xs
