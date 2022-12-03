@@ -15,3 +15,8 @@ spec = do
       bitFreqs 5 [5] `shouldBe` [0, 0, 1, 0, 1]
       bitFreqs 5 [9, 3, 1] `shouldBe` [0, 1, 0, 1, 3]
 
+  describe "mostFrequent" $ do
+    it "Gets the most frequent bit values for a list of integers" $ do
+      mostFrequent 5 [5] `shouldBe` [0, 0, 1, 0, 1]
+      mostFrequent 5 [10, 8, 9, 3, 1] `shouldBe` [0, 1, 0, 0, 1]
+

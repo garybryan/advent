@@ -1,4 +1,4 @@
-module Advent2021.Day3.Base (binStrToInt, bitFreqs) where
+module Advent2021.Day3.Base (binStrToInt, bitFreqs, mostFrequent) where
 
 binCharToInt :: Char -> Int
 binCharToInt c
@@ -28,3 +28,14 @@ bitFreqs k = reverse . foldr aux (initialFreqs k)
     aux x (f : fs) = r + f : aux q fs
       where
         (q, r) = x `divMod` 2
+
+-- Take a frequency list (result of `bitFreqs`), given the total number of numbers,
+-- and return a list of the most frequent bit value (0 or 1) for each position.
+-- We're told that there will always be a most common bit, so we don't have to worry about an equal case.
+mostFrequentInFreqs :: Int -> [Int] -> [Int]
+mostFrequentInFreqs n = map $ fromEnum . (> (n `div` 2))
+
+mostFrequent :: Int -> [Int] -> [Int]
+mostFrequent k xs = mostFrequentInFreqs n (bitFreqs k xs)
+  where
+    n = length xs
