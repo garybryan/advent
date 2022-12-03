@@ -31,9 +31,13 @@ spec = do
       filterToLeastCommonInPos 2 [1, 2, 3, 4] `shouldBe` [4]
 
   describe "oxygenRating" $ do
-    it "Fiters by the most common bit value starting at MSB until one number is left" $ do
+    it "Filters by the most common bit value starting at MSB until one number is left" $ do
       oxygenRating 5 [4, 30, 22, 23, 21, 15, 7, 28, 16, 25, 2, 10] `shouldBe` 23
 
   describe "co2Rating" $ do
-    it "Fiters by the least common bit value starting at MSB until one number is left" $ do
+    it "filters by the least common bit value starting at MSB until one number is left" $ do
       co2Rating 5 [4, 30, 22, 23, 21, 15, 7, 28, 16, 25, 2, 10] `shouldBe` 10
+
+  describe "lifeSupportRating" $ do
+    it "multiplies oxygen and CO2 ratings" $ do
+      lifeSupportRating 5 [4, 30, 22, 23, 21, 15, 7, 28, 16, 25, 2, 10] `shouldBe` 230

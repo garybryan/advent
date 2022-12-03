@@ -6,6 +6,8 @@ module Advent2021.Day3.Part2
     filterToLeastCommonInPos,
     oxygenRating,
     co2Rating,
+    lifeSupportRating,
+    run,
   )
 where
 
@@ -16,8 +18,6 @@ import Lib.Read (readLines)
 -- Gives whether a certain bit (zero-indexed, starting from LSB) of the number has a certain value.
 matchBit :: Int -> Int -> Int -> Bool
 matchBit i v n = n `shiftR` i .&. 1 == v
-
--- todo use bit i
 
 filterOnBit :: Int -> Int -> [Int] -> [Int]
 filterOnBit i v = filter $ matchBit i v
@@ -43,3 +43,14 @@ oxygenRating numBits = filterToOne (numBits - 1) filterToMostCommonInPos
 
 co2Rating :: Int -> [Int] -> Int
 co2Rating numBits = filterToOne (numBits - 1) filterToLeastCommonInPos
+
+lifeSupportRating :: Int -> [Int] -> Int
+lifeSupportRating numBits xs = oxygenRating numBits xs * co2Rating numBits xs
+
+lifeSupportRatingFromLines :: [String] -> Int
+lifeSupportRatingFromLines ls = lifeSupportRating (numBitsNeeded ls) (intLines ls)
+
+run :: FilePath -> IO ()
+run filePath = do
+  fileLines <- readLines filePath
+  putStrLn $ "Life support rating: " ++ show (lifeSupportRatingFromLines fileLines)

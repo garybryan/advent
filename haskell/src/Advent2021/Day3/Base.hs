@@ -3,6 +3,8 @@ module Advent2021.Day3.Base
     binStrToInt,
     bitFreqs,
     mostFrequent,
+    numBitsNeeded,
+    intLines,
   )
 where
 
@@ -17,6 +19,9 @@ binDigitsToInt = foldl1 (\acc n -> acc * 2 + n)
 
 binStrToInt :: String -> Int
 binStrToInt = binDigitsToInt . map binCharToDigit
+
+intLines :: [String] -> [Int]
+intLines = map binStrToInt
 
 -- Make a blank frequency list for `nBits` bits.
 initialFreqs :: Int -> [Int]
@@ -51,3 +56,8 @@ mostFrequent :: Int -> [Int] -> [Int]
 mostFrequent nBits xs = mostFrequentInFreqs nNums (bitFreqs nBits xs)
   where
     nNums = length xs
+
+-- TODO could get from the ints rather than the strings.
+-- This seems simpler (just look at one element rather than all) but it would be nice not to have to pass it to int functions.
+numBitsNeeded :: [String] -> Int
+numBitsNeeded = length . head

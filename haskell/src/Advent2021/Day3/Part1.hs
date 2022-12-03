@@ -28,11 +28,8 @@ powerConsumption nBits xs = g * epsilonRate nBits g
   where
     g = gammaRate nBits xs
 
-numBitsNeeded :: [String] -> Int
-numBitsNeeded = length . head
-
 powerConsumptionFromLines :: [String] -> Int
-powerConsumptionFromLines ls = powerConsumption (numBitsNeeded ls) (map binStrToInt ls)
+powerConsumptionFromLines ls = powerConsumption (numBitsNeeded ls) (intLines ls)
 
 run :: FilePath -> IO ()
 run filePath = do
