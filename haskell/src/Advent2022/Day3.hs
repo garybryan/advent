@@ -29,15 +29,18 @@ priority c
 splitRucksack :: String -> (String, String)
 splitRucksack s = splitAt (length s `div` 2) s
 
--- This finds the first common item if there are several, which again is fine:
--- we're given the constraint that there's always exactly one.
-findCommonItem :: (String, String) -> Char
-findCommonItem (s1, s2) = head $ filter (`Set.member` s1set) s2
+commonItems :: String -> String -> String
+commonItems s1 = filter (`Set.member` s1set)
   where
     s1set = Set.fromList s1
 
+-- This finds the first common item if there are several, which again is fine:
+-- we're given the constraint that there's always exactly one.
+commonItem :: (String, String) -> Char
+commonItem (s1, s2) = head $ commonItems s1 s2
+
 commonItemPriority :: String -> Int
-commonItemPriority = priority . findCommonItem . splitRucksack
+commonItemPriority = priority . commonItem . splitRucksack
 
 commonItemsPriority :: [String] -> Int
 commonItemsPriority = sum . map commonItemPriority
