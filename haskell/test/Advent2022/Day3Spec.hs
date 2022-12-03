@@ -23,3 +23,9 @@ spec = do
     it "Finds the priority of the common item" $ do
       commonItemPriority "vJrwpWtwJgWrhcsFMMfFFhFpb" `shouldBe` 16
       commonItemPriority "PmmdzqPrVvPwwTWBwg" `shouldBe` 42
+
+  describe "commonItemsPriority" $ do
+    it "Finds the sum of priorities of the common item in each rucksack" $ do
+      -- ghc gives a syntax error when I try to spread this over multiple lines...
+      let rucksacks = ["vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg", "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"]
+      commonItemsPriority rucksacks `shouldBe` 157

@@ -1,7 +1,8 @@
-module Advent2022.Day3 (priority, findCommonItem, commonItemPriority) where
+module Advent2022.Day3 (priority, commonItemPriority, commonItemsPriority, run) where
 
 import Data.Char (ord)
 import qualified Data.Set as Set
+import Lib.Read (readLines)
 
 orda :: Int
 orda = ord 'a'
@@ -37,3 +38,12 @@ findCommonItem (s1, s2) = head $ filter (`Set.member` s1set) s2
 
 commonItemPriority :: String -> Int
 commonItemPriority = priority . findCommonItem . splitRucksack
+
+commonItemsPriority :: [String] -> Int
+commonItemsPriority = sum . map commonItemPriority
+
+run :: FilePath -> IO ()
+run filePath = do
+  fileLines <- readLines filePath
+  let totalPriority = commonItemsPriority fileLines
+  putStrLn $ "Part 1: Total priority of common items: " ++ show totalPriority
