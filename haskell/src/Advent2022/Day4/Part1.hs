@@ -2,8 +2,6 @@ module Advent2022.Day4.Part1 (hasContainment, numContain, run) where
 
 import Advent2022.Day4.Base
 
-type Range = (Int, Int)
-
 hasContainment :: Range -> Range -> Bool
 hasContainment (s1, e1) (s2, e2) = s1 >= s2 && e1 <= e2 || s2 >= s1 && e2 <= e1
 

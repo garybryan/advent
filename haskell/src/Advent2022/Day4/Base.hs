@@ -1,4 +1,4 @@
-module Advent2022.Day4.Base (numMatchingRanges, parseLine) where
+module Advent2022.Day4.Base (Range, numMatchingRanges, parseLine) where
 
 import Data.List.Split
 

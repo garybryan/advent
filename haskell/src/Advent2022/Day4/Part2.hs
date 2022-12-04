@@ -2,8 +2,6 @@ module Advent2022.Day4.Part2 (hasOverlap, numOverlap, run) where
 
 import Advent2022.Day4.Base
 
-type Range = (Int, Int)
-
 hasOverlap :: Range -> Range -> Bool
 hasOverlap (s1, e1) (s2, e2) = s1 <= e2 && s2 <= e1
 
