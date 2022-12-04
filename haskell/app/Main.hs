@@ -9,6 +9,7 @@ import qualified Advent2022.Day2.Part1
 import qualified Advent2022.Day2.Part2
 import qualified Advent2022.Day3.Part1
 import qualified Advent2022.Day3.Part2
+import qualified Advent2022.Day4.Base
 
 -- TODO implement a better run system:
 -- Main could take a year and day as a parameter, and call the appropriate `run` functions.
@@ -38,3 +39,6 @@ main = do
   Advent2022.Day3.Part1.run "data/2022/3.txt"
   putStrLn "\n2022 day 3 part 2:"
   Advent2022.Day3.Part2.run "data/2022/3.txt"
+
+  putStrLn "\n2022 day 4 part 1:"
+  Advent2022.Day4.Base.run "data/2022/4.txt"
