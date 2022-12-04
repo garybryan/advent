@@ -1,4 +1,4 @@
-module Advent2022.Day4.Base (numMatchingRanges, lineRanges) where
+module Advent2022.Day4.Base (numMatchingRanges, parseLine) where
 
 import Data.List.Split
 
@@ -8,11 +8,11 @@ numMatchingRanges :: (Range -> Range -> Bool) -> [(Range, Range)] -> Int
 numMatchingRanges fn = length . filter (uncurry fn)
 
 parseRange :: String -> Range
-parseRange s = (read $ head nums, read $ last nums)
+parseRange s = (read $ head ss, read $ last ss)
   where
-    nums = splitOn "-" s
+    ss = splitOn "-" s
 
-lineRanges :: String -> (Range, Range)
-lineRanges l = (head ranges, last ranges)
+parseLine :: String -> (Range, Range)
+parseLine l = (head rs, last rs)
   where
-    ranges = map parseRange $ splitOn "," l
+    rs = map parseRange $ splitOn "," l

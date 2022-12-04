@@ -5,6 +5,6 @@ import Test.Hspec
 
 spec :: Spec
 spec = do
-  describe "lineRanges" $ do
-    it "parses ranges from a line" $ do
-      lineRanges "2-5,8-13" `shouldBe` ((2, 5), (8, 13))
+  describe "parseLine" $ do
+    it "parses a pair of ranges from a line" $ do
+      parseLine "2-5,8-13" `shouldBe` ((2, 5), (8, 13))
