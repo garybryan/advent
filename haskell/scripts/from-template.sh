@@ -7,12 +7,24 @@ if [[ "${TRACE-0}" == "1" ]]; then
 fi
 
 if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
-	echo "Usage: $0 [year] [day]"
+    echo "Usage: $0 ([year] [day] | [tomorrow])"
 	exit
 fi
 
-year="${1:-$(date +'%Y')}"
-day="${2:-$(date +'%d')}"
+if [[ "${1-}" =~ ^-*t(omorrow)?$ ]]; then
+    # AoC runs until 25 December, so the year for "tomorrow" is always the current ;)
+    year="$(date +'%Y')"
+    day="$(date --date='tomorrow' +'%d')"
+else
+    year="${1:-$(date +'%Y')}"
+    day="${2:-$(date +'%d')}"
+fi
+
+# Attempt to work with GNU or BSD/MacOS sed
+case $(sed --help 2>&1) in
+  *GNU*) sed_i () { sed -i "$@"; };;
+  *) sed_i () { sed -i '' "$@"; };;
+esac
 
 cd "$(dirname "$0")/.."
 
@@ -26,6 +38,9 @@ copy_file() {
     [[ ! -d "$dir" ]] && mkdir -p "$dir"
 
     cp -v "$path_in_template" "$path_day"
+
+    sed_i "s/_Y_/$year/g" $path_day
+    sed_i "s/_D_/$day/g" $path_day
 }
 
 for f in $(find template/ -type f); do
