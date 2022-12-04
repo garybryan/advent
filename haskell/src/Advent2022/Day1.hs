@@ -1,7 +1,6 @@
 module Advent2022.Day1 (run) where
 
 import qualified Data.Heap as H
-import Lib.Read (readLines)
 import Text.Read (readMaybe)
 
 readLine :: String -> Maybe Int
@@ -13,6 +12,9 @@ getCaloriesByElf (Nothing : xs) = 0 : getCaloriesByElf xs
 getCaloriesByElf (Just x : xs) = (x + head rest) : tail rest
   where
     rest = getCaloriesByElf xs
+
+getMaxCalories :: [Int] -> Int
+getMaxCalories = maximum
 
 -- Needed for type safety as `H.viewHead` could be Nothing for an empty heap;
 -- in reality it'll never be empty, but the compiler doesn't know that!
@@ -35,16 +37,12 @@ getMaxK k xs = H.toList $ foldl updateHeap initialHeap rest
       | x `gtIfJust` H.viewHead h = H.insert x (H.drop 1 h)
       | otherwise = h
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  let caloriesPerElf = getCaloriesByElf $ map readLine fileLines
+getMax3Total :: [Int] -> Int
+getMax3Total = sum . getMaxK 3
 
-  let maxCalories = maximum caloriesPerElf
-  putStrLn ("Part 1: Max calories for one elf: " ++ show maxCalories)
-
-  let top3MaxCalories = getMaxK 3 caloriesPerElf
-  putStrLn ("Part 2: Top 3 calories per elf: " ++ show top3MaxCalories)
-
-  let totalTop3MaxCalories = sum top3MaxCalories
-  putStrLn ("Part 2: Total of top 3 calories per elf: " ++ show totalTop3MaxCalories)
+run :: [String] -> String
+run ls = "Part 1: Max calories for one elf: " ++ show maxCalories ++ "; Part 2: Total of top 3 max: " ++ show totalTop3
+  where
+    calories = getCaloriesByElf $ map readLine ls
+    maxCalories = getMaxCalories calories
+    totalTop3 = getMax3Total calories

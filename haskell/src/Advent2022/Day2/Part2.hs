@@ -2,7 +2,6 @@ module Advent2022.Day2.Part2 (run, scoreFromLinesPart2) where
 
 import Advent2022.Day2.Base
 import qualified Data.Map as Map
-import Lib.Read (readLines)
 
 data Action = Lose | Draw | Win deriving (Eq, Show)
 
@@ -38,8 +37,5 @@ charsToRound (c, a) =
 scoreFromLinesPart2 :: [String] -> Int
 scoreFromLinesPart2 = scoreFromLines charsToRound
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  let result = scoreFromLinesPart2 fileLines
-  putStrLn ("Part 2 final score: " ++ show result)
+run :: [String] -> String
+run ls = "Final score: " ++ show (scoreFromLinesPart2 ls)

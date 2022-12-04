@@ -1,7 +1,6 @@
 module Advent2021.Day2 (run) where
 
 import Data.Bifunctor (bimap)
-import Lib.Read (readLines)
 
 type Command = (String, Int)
 
@@ -36,13 +35,9 @@ getFinalPositionAim cs = aux (0, 0) 0 (map getCommandVector cs)
       where
         d' = d + dd
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  let commands = map parseLine fileLines
-
-  let result = getArea (getFinalPosition commands)
-  putStrLn ("Part 1 result: " ++ show result)
-
-  let resultAim = getArea (getFinalPositionAim commands)
-  putStrLn ("Part 2 (with aim) result: " ++ show resultAim)
+run :: [String] -> String
+run ls = "Part 1 result: " ++ show result ++ "; Part 2 (with aim) result: " ++ show resultAim
+  where
+    commands = map parseLine ls
+    result = getArea (getFinalPosition commands)
+    resultAim = getArea (getFinalPositionAim commands)

@@ -13,7 +13,6 @@ where
 
 import Advent2021.Day3.Base
 import Data.Bits
-import Lib.Read (readLines)
 
 -- Gives whether a certain bit (zero-indexed, starting from LSB) of the number has a certain value.
 matchBit :: Int -> Int -> Int -> Bool
@@ -50,7 +49,5 @@ lifeSupportRating numBits xs = oxygenRating numBits xs * co2Rating numBits xs
 lifeSupportRatingFromLines :: [String] -> Int
 lifeSupportRatingFromLines ls = lifeSupportRating (numBitsNeeded ls) (intLines ls)
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  putStrLn $ "Life support rating: " ++ show (lifeSupportRatingFromLines fileLines)
+run :: [String] -> String
+run ls = "Life support rating: " ++ show (lifeSupportRatingFromLines ls)

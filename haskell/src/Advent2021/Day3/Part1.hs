@@ -9,7 +9,6 @@ where
 
 import Advent2021.Day3.Base
 import Data.Bits
-import Lib.Read (readLines)
 
 gammaRate :: Int -> [Int] -> Int
 gammaRate nBits = binDigitsToInt . mostFrequent nBits
@@ -31,7 +30,5 @@ powerConsumption nBits xs = g * epsilonRate nBits g
 powerConsumptionFromLines :: [String] -> Int
 powerConsumptionFromLines ls = powerConsumption (numBitsNeeded ls) (intLines ls)
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  putStrLn $ "Power consumption: " ++ show (powerConsumptionFromLines fileLines)
+run :: [String] -> String
+run ls = "Power consumption: " ++ show (powerConsumptionFromLines ls)

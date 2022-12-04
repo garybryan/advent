@@ -1,7 +1,6 @@
 module Advent2022.Day4.Part1 (hasContainment, numContain, run) where
 
 import Advent2022.Day4.Base
-import Lib.Read (readLines)
 
 type Range = (Int, Int)
 
@@ -14,7 +13,5 @@ numContain = numMatchingRanges hasContainment
 numContainFromLines :: [String] -> Int
 numContainFromLines = numContain . map parseLine
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-  putStrLn $ "Number of pairs with containing ranges: " ++ show (numContainFromLines fileLines)
+run :: [String] -> String
+run ls = "Number of pairs with containing ranges: " ++ show (numContainFromLines ls)

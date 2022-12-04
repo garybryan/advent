@@ -1,7 +1,6 @@
 module Advent2022.Day3.Part1 (commonCompartmentItemPriority, commonCompartmentItemsPriority, run) where
 
 import Advent2022.Day3.Base
-import Lib.Read (readLines)
 
 -- An odd-sized rucksack will have a bigger second compartment with this logic,
 -- but the question says that all have even length (same number in each compartment).
@@ -17,9 +16,5 @@ commonCompartmentItemPriority = priority . commonCompartmentItem . splitRucksack
 commonCompartmentItemsPriority :: [String] -> Int
 commonCompartmentItemsPriority = sum . map commonCompartmentItemPriority
 
-run :: FilePath -> IO ()
-run filePath = do
-  fileLines <- readLines filePath
-
-  let totalPriority = commonCompartmentItemsPriority fileLines
-  putStrLn $ "Total priority of common items in compartments: " ++ show totalPriority
+run :: [String] -> String
+run ls = "Total priority of common items in compartments: " ++ show (commonCompartmentItemsPriority ls)
