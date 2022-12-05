@@ -3,6 +3,7 @@ module Advent2022.Day05.Base (Move, Stack, Stacks, splitInput, parseMove, parseS
 import Data.Char
 import qualified Data.Dequeue as DQ
 import Data.Foldable (toList)
+import Data.List (isPrefixOf)
 import Data.List.Split
 import Data.Maybe
 import qualified Data.Vector as V
@@ -47,9 +48,8 @@ combineStackVectors = V.zipWith combineStacks
 splitInput :: [String] -> ([String], [String])
 splitInput ss = (stackLines, actionLines)
   where
-    ssSplit = splitWhen (== "") ss
-    stackLines = init $ head ssSplit
-    actionLines = last ssSplit
+    (stackLines, rest) = break (isPrefixOf " 1") ss
+    actionLines = dropWhile (not . isPrefixOf "move") rest
 
 readNumbers :: String -> [Int]
 readNumbers = map read . filter (all isDigit) . splitOn " "
