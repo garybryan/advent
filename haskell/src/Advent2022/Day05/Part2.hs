@@ -8,6 +8,7 @@ import qualified Data.Vector as V
 -- Save myself some typing.
 type Deque = DQ.BankersDequeue
 
+-- TODO can probably be done with foldr/iterate for repeated function application
 popBackSeveralHelper :: [a] -> Int -> Deque a -> ([a], Deque a)
 popBackSeveralHelper vs 0 s = (vs, s)
 popBackSeveralHelper vs n s = popBackSeveralHelper (v : vs) (n - 1) s'
