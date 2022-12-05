@@ -12,6 +12,7 @@ module Advent2022.Day02.Base
 where
 
 import qualified Data.Map as Map
+import Data.Maybe
 
 -- Define `N` choices as an enumeration with a circular ordering,
 -- such that choice `k` is always beaten by choice `k + 1 mod N`.
@@ -58,9 +59,7 @@ opponentChoiceMap =
     ]
 
 parseChar :: ParseMap a -> Char -> a
-parseChar cpm c = case Map.lookup c cpm of
-  Nothing -> error ("Invalid char: " ++ show c)
-  Just val -> val
+parseChar pm c = fromMaybe (error $ "Invalid char: " ++ show c) $ Map.lookup c pm
 
 lineToChars :: String -> (Char, Char)
 lineToChars line =

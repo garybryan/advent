@@ -1,6 +1,7 @@
 module Advent2022.Day01 (run) where
 
 import qualified Data.Heap as H
+import Data.Maybe
 import Text.Read (readMaybe)
 
 readLine :: String -> Maybe Int
@@ -16,12 +17,6 @@ getCaloriesByElf (Just x : xs) = (x + head rest) : tail rest
 getMaxCalories :: [Int] -> Int
 getMaxCalories = maximum
 
--- Needed for type safety as `H.viewHead` could be Nothing for an empty heap;
--- in reality it'll never be empty, but the compiler doesn't know that!
-gtIfJust :: (Ord a) => a -> Maybe a -> Bool
-gtIfJust _ Nothing = False
-gtIfJust x (Just y) = x > y
-
 type IntHeap = H.MinHeap Int
 
 -- Standard k-max elements implementation using a min-heap to store the k largest values.
@@ -34,7 +29,7 @@ getMaxK k xs = H.toList $ foldl updateHeap initialHeap rest
     initialHeap = H.fromList (take k xs) :: IntHeap
     rest = drop k xs
     updateHeap h x
-      | x `gtIfJust` H.viewHead h = H.insert x (H.drop 1 h)
+      | x > fromMaybe (error "Empty heap") (H.viewHead h) = H.insert x (H.drop 1 h)
       | otherwise = h
 
 getMax3Total :: [Int] -> Int
