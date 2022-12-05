@@ -10,9 +10,9 @@ numMatchingRanges fn = length . filter (uncurry fn)
 parseRange :: String -> Range
 parseRange s = (read $ head ss, read $ last ss)
   where
-    ss = splitOn "-" s
+    ss = splitWhen (== '-') s
 
 parseLine :: String -> (Range, Range)
 parseLine l = (head rs, last rs)
   where
-    rs = map parseRange $ splitOn "," l
+    rs = map parseRange $ splitWhen (== ',') l

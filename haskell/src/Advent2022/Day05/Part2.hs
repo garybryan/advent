@@ -1,4 +1,4 @@
-module Advent2022.Day05.Part2 (moveSeveralAtOnce, applyMoves, applyMovesToLines, run) where
+module Advent2022.Day05.Part2 (moveSeveralAtOnce, applyMovesToLinesSeveralAtOnce, run) where
 
 import Advent2022.Day05.Base
 import qualified Data.Dequeue as DQ
@@ -20,33 +20,19 @@ popBackSeveral = popBackSeveralHelper []
 pushBackSeveral :: Deque a -> [a] -> Deque a
 pushBackSeveral = foldl DQ.pushBack
 
-moveSeveralAtOnce :: Int -> Int -> Int -> Stacks -> Stacks
-moveSeveralAtOnce n from to ss = ss V.// [(from0, newFrom), (to0, newTo)]
+moveSeveralAtOnce :: Move -> Stacks -> Stacks
+moveSeveralAtOnce (n, from, to) ss = ss V.// [(from0, newFrom), (to0, newTo)]
   where
     from0 = from - 1
     to0 = to - 1
     (cs, newFrom) = popBackSeveral n (ss V.! from0)
     newTo = pushBackSeveral (ss V.! to0) cs
 
--- TODO refactor to avoid repetition of movefunc, applyMoves, etc. in parts 1 and 2
-moveFunc :: Move -> (Stacks -> Stacks)
-moveFunc (num, from, to) = moveSeveralAtOnce num from to
-
-applyMoves :: Stacks -> [Move] -> Stacks
-applyMoves ss ms = moveFuncs ss
-  where
-    -- flip needed because Haskell thinks it's smart to reverse the parameters for foldl and foldr..
-    moveFuncs = foldl1 (flip (.)) (map moveFunc ms)
-
-applyMovesToLines :: [String] -> Stacks
-applyMovesToLines s = ss `applyMoves` ms
-  where
-    (stackLines, moveLines) = splitInput s
-    ss = parseStackLines stackLines
-    ms = map parseMove moveLines
+applyMovesToLinesSeveralAtOnce :: [String] -> Stacks
+applyMovesToLinesSeveralAtOnce = applyMovesToLines moveSeveralAtOnce
 
 topCratesFromLines :: [String] -> String
-topCratesFromLines = topCrates . applyMovesToLines
+topCratesFromLines = topCrates . applyMovesToLinesSeveralAtOnce
 
 run :: [String] -> String
 run ls = "Final top crates from moving several at a time: " ++ show (topCratesFromLines ls)

@@ -14,19 +14,19 @@ listsToStacks = V.fromList . map DQ.fromList
 
 spec :: Spec
 spec = do
-  describe "parseStackLine" $ do
+  describe "parseStack" $ do
     it "parses a stack line into stacks" $ do
       let stackLine = "[V]     [B]                     [C]"
-      stacksToLists (parseStackLine stackLine) `shouldBe` ["V", "", "B", "", "", "", "", "", "C"]
+      stacksToLists (parseStack stackLine) `shouldBe` ["V", "", "B", "", "", "", "", "", "C"]
 
-  describe "parseStackLines" $ do
+  describe "parseStacks" $ do
     it "parses stack lines into stacks" $ do
-      let stackLines = ["[V]     [B]                     [C]", "[C]     [N] [G]         [W]     [P]"]
-      stacksToLists (parseStackLines stackLines) `shouldBe` ["CV", "", "NB", "G", "", "", "W", "", "PC"]
-
-  -- TODO
-  -- describe "parseStackLines" $ do
-  --   it "parses stack lines into stacks when uneven" $ do
+      let stackLines =
+            [ "    [D]    ",
+              "[N] [C]    ",
+              "[Z] [M] [P]"
+            ]
+      stacksToLists (parseStacks stackLines) `shouldBe` ["ZN", "MCD", "P"]
 
   describe "parseMove" $ do
     it "parses a line into a move tuple (num, from, to)" $ do
@@ -38,3 +38,16 @@ spec = do
 
     it "Lists the top crates on the stacks when a stack is empty" $ do
       topCrates (listsToStacks ["ZN", "", "P"]) `shouldBe` "N P"
+
+  describe "applyMovesToLines" $ do
+    it "applies all moves to the stacks using the given function" $ do
+      let ls =
+            [ "    [D]    ",
+              "[N] [C]    ",
+              "[Z] [M] [P]",
+              " 1   2   3 ",
+              "",
+              "move 1 from 2 to 1"
+            ]
+      let f (_, _, _) = V.reverse
+      stacksToLists (applyMovesToLines f ls) `shouldBe` ["P", "MCD", "ZN"]

@@ -1,4 +1,4 @@
-module Advent2022.Day05.Base (Move, Stack, Stacks, splitInput, parseMove, parseStackLine, parseStackLines, topCrates) where
+module Advent2022.Day05.Base (Move, Stack, Stacks, splitInput, parseMove, parseStack, parseStacks, topCrates, applyMovesToLines) where
 
 import Data.Char
 import qualified Data.Dequeue as DQ
@@ -30,17 +30,26 @@ groupToStack s
   | isSpaces s = DQ.empty
   | otherwise = DQ.fromList [s !! 1] -- quick 'n' dirty, but the 2nd char of the string is what we want
 
-parseStackLine :: String -> Stacks
-parseStackLine s = V.fromList $ map groupToStack (chunksOf 4 s)
+parseStack :: String -> Stacks
+parseStack s = V.fromList $ map groupToStack (chunksOf 4 s)
 
--- TODO less horrible implementation than converting to and from lists.
--- We just want to append an item onto the accumulating stack.
+-- Add the elements from the first stack, from the front, onto the top of the second,
+-- so that repeated application results in stacks with the first elements at the top (back).
 combineStacks :: Stack -> Stack -> Stack
-combineStacks s1 s2 = DQ.fromList $ toList s2 ++ toList s1
+combineStacks s1 s2 = foldl DQ.pushBack s2 (toList s1)
 
--- TODO zipWith will be shortest rather than longest
+-- zipWith works here because input lines all have the same length:
+-- empty stacks from the right are padded with whitespace.
 combineStackVectors :: Stacks -> Stacks -> Stacks
 combineStackVectors = V.zipWith combineStacks
+
+-- File format is stack lines then blank line then movement lines.
+splitInput :: [String] -> ([String], [String])
+splitInput ss = (stackLines, actionLines)
+  where
+    ssSplit = splitWhen (== "") ss
+    stackLines = init $ head ssSplit
+    actionLines = last ssSplit
 
 readNumbers :: String -> [Int]
 readNumbers = map read . filter (all isDigit) . splitOn " "
@@ -50,21 +59,28 @@ parseMove s = (head nums, nums !! 1, nums !! 2)
   where
     nums = readNumbers s
 
--- TODO make this work properly with uneven lines.
--- This happens to work because the given data happens to have a max-height last stack,
--- but it should be flexible enough to work without.
-parseStackLines :: [String] -> Stacks
-parseStackLines = foldr1 combineStackVectors . map parseStackLine
+parseMoves :: [String] -> [Move]
+parseMoves = map parseMove
 
--- File format is stack lines then blank line then movement lines.
--- TODO common splitIn2 / split by char function as it keeps coming up.
-splitInput :: [String] -> ([String], [String])
-splitInput ss = (init $ head ssSplit, last ssSplit)
+parseStacks :: [String] -> Stacks
+parseStacks = foldr1 combineStackVectors . map parseStack
+
+parseInput :: [String] -> (Stacks, [Move])
+parseInput ss = (parseStacks sts, parseMoves ms)
   where
-    ssSplit = split (whenElt (== "")) ss
+    (sts, ms) = splitInput ss
 
 topCrate :: Stack -> Char
 topCrate = fromMaybe ' ' . DQ.last
 
 topCrates :: Stacks -> String
 topCrates = V.toList . V.map topCrate
+
+composeMoves :: (Move -> Stacks -> Stacks) -> [Move] -> (Stacks -> Stacks)
+composeMoves f ms = foldl1 (flip (.)) (map f ms)
+
+applyMovesToLines :: (Move -> Stacks -> Stacks) -> [String] -> Stacks
+applyMovesToLines f ss = applyMoves sts
+  where
+    (sts, ms) = parseInput ss
+    applyMoves = composeMoves f ms
