@@ -1,4 +1,4 @@
-module Advent2022.Day05.Part1 (Stack, Stacks, move, moveSeveral, parseMove, parseStackLine, parseStackLines, applyMoves) where
+module Advent2022.Day05.Part1 (Stack, Stacks, move, moveSeveral, parseMove, parseStackLine, parseStackLines, applyMoves, finalStacksFromLines, topCrates, run) where
 
 import Advent2022.Day05.Base
 import Data.Char
@@ -45,7 +45,7 @@ parseStackLine s = V.fromList $ map groupToStack (chunksOf 4 s)
 
 -- TODO less horrible implementation than converting to and from lists
 combineStacks :: Stack -> Stack -> Stack
-combineStacks s1 s2 = DQ.fromList $ toList s1 ++ toList s2
+combineStacks s1 s2 = DQ.fromList $ toList s2 ++ toList s1
 
 -- TODO zipwidth will be shortest rather than longest
 combineStackVectors :: Stacks -> Stacks -> Stacks
@@ -63,13 +63,14 @@ parseMove s = (head nums, nums !! 1, nums !! 2)
 moveFunc :: (Int, Int, Int) -> (Stacks -> Stacks)
 moveFunc (num, from, to) = moveSeveral num from to
 
+-- TODO make this work properly with uneven lines
 parseStackLines :: [String] -> Stacks
-parseStackLines = foldl1 combineStackVectors . map parseStackLine
+parseStackLines = foldr1 combineStackVectors . map parseStackLine
 
 -- File format is stack lines then blank line then movement lines
--- TODO common splitIn2 function
+-- TODO common splitIn2 / split by char function
 splitInput :: [String] -> ([String], [String])
-splitInput ss = (head ssSplit, last ssSplit)
+splitInput ss = (init $ head ssSplit, last ssSplit)
   where
     ssSplit = split (whenElt (== "")) ss
 
@@ -77,3 +78,22 @@ applyMoves :: Stacks -> [(Int, Int, Int)] -> Stacks
 applyMoves ss ms = moveFuncs ss
   where
     moveFuncs = foldl1 (flip (.)) (map moveFunc ms)
+
+finalStacksFromLines :: [String] -> Stacks
+finalStacksFromLines s = ss `applyMoves` ms
+  where
+    (stackLines, moveLines) = splitInput s
+    ss = parseStackLines stackLines
+    ms = map parseMove moveLines
+
+topCrate :: Stack -> Char
+topCrate = fromMaybe ' ' . DQ.last
+
+topCrates :: Stacks -> String
+topCrates = V.toList . V.map topCrate
+
+finalTopCratesFromLines :: [String] -> String
+finalTopCratesFromLines = topCrates . finalStacksFromLines
+
+run :: [String] -> String
+run ls = "Result: " ++ show (finalTopCratesFromLines ls)

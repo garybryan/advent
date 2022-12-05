@@ -29,13 +29,12 @@ spec = do
   describe "parseStackLine" $ do
     it "parses a stack line into stacks" $ do
       let stackLine = "[V]     [B]                     [C]"
-      (stacksToLists $ parseStackLine stackLine) `shouldBe` ["V", "", "B", "", "", "", "", "", "C"]
+      stacksToLists (parseStackLine stackLine) `shouldBe` ["V", "", "B", "", "", "", "", "", "C"]
 
   describe "parseStackLines" $ do
     it "parses stack lines into stacks" $ do
-      -- it "parses stack lines into stacks" $ do
       let stackLines = ["[V]     [B]                     [C]", "[C]     [N] [G]         [W]     [P]"]
-      (stacksToLists $ parseStackLines stackLines) `shouldBe` ["VC", "", "BN", "G", "", "", "W", "", "CP"]
+      stacksToLists (parseStackLines stackLines) `shouldBe` ["CV", "", "NB", "G", "", "", "W", "", "PC"]
 
   -- TODO
   -- describe "parseStackLines" $ do
@@ -50,3 +49,25 @@ spec = do
       let stacks = listsToStacks ["ZN", "MCD", "P"]
       let moves = [(1, 2, 1), (3, 1, 3), (2, 2, 1), (1, 1, 2)]
       stacksToLists (stacks `applyMoves` moves) `shouldBe` ["C", "M", "PDNZ"]
+
+  describe "finalStacksFromLines" $ do
+    it "Applies all moves to the stacks, for the moves and stacks defined in the lines" $ do
+      let ls =
+            [ "    [D]    ",
+              "[N] [C]    ",
+              "[Z] [M] [P]",
+              " 1   2   3 ",
+              "",
+              "move 1 from 2 to 1",
+              "move 3 from 1 to 3",
+              "move 2 from 2 to 1",
+              "move 1 from 1 to 2"
+            ]
+      stacksToLists (finalStacksFromLines ls) `shouldBe` ["C", "M", "PDNZ"]
+
+  describe "topCrates" $ do
+    it "Lists the top crates on the stacks" $ do
+      topCrates (listsToStacks ["ZN", "MCD", "P"]) `shouldBe` "NDP"
+
+    it "Lists the top crates on the stacks when a stack is empty" $ do
+      topCrates (listsToStacks ["ZN", "", "P"]) `shouldBe` "N P"
