@@ -1,10 +1,12 @@
-module Advent2022.Day05.Part1 (Stack, Stacks, move, moveSeveral, parseStackLine) where
+module Advent2022.Day05.Part1 (Stack, Stacks, move, moveSeveral, parseMove, parseStackLine, parseStackLines, applyMoves) where
 
 import Advent2022.Day05.Base
+import Data.Char
 import qualified Data.Dequeue as DQ
+import Data.Foldable (toList)
+import Data.List.Split
 import Data.Maybe
 import qualified Data.Vector as V
-import Lib.Groups
 
 type Stack = DQ.BankersDequeue Char
 
@@ -39,7 +41,39 @@ groupToStack s
   | otherwise = DQ.fromList [s !! 1] -- quick 'n' dirty, but the 2nd char of the string is what we want
 
 parseStackLine :: String -> Stacks
-parseStackLine s = V.fromList $ map groupToStack (groupsOf 4 s)
+parseStackLine s = V.fromList $ map groupToStack (chunksOf 4 s)
 
--- run :: [String] -> String
--- run ls = "Result: " ++ show (doThing)
+-- TODO less horrible implementation than converting to and from lists
+combineStacks :: Stack -> Stack -> Stack
+combineStacks s1 s2 = DQ.fromList $ toList s1 ++ toList s2
+
+-- TODO zipwidth will be shortest rather than longest
+combineStackVectors :: Stacks -> Stacks -> Stacks
+combineStackVectors = V.zipWith combineStacks
+
+readNumbers :: String -> [Int]
+readNumbers = map read . filter (all isDigit) . splitOn " "
+
+parseMove :: String -> (Int, Int, Int)
+parseMove s = (head nums, nums !! 1, nums !! 2)
+  where
+    nums = readNumbers s
+
+-- Like uncurry but for a triplet
+moveFunc :: (Int, Int, Int) -> (Stacks -> Stacks)
+moveFunc (num, from, to) = moveSeveral num from to
+
+parseStackLines :: [String] -> Stacks
+parseStackLines = foldl1 combineStackVectors . map parseStackLine
+
+-- File format is stack lines then blank line then movement lines
+-- TODO common splitIn2 function
+splitInput :: [String] -> ([String], [String])
+splitInput ss = (head ssSplit, last ssSplit)
+  where
+    ssSplit = split (whenElt (== "")) ss
+
+applyMoves :: Stacks -> [(Int, Int, Int)] -> Stacks
+applyMoves ss ms = moveFuncs ss
+  where
+    moveFuncs = foldl1 (flip (.)) (map moveFunc ms)
