@@ -16,3 +16,9 @@ spec = do
       let stacks = V.fromList [DQ.fromList ['N', 'Z'], DQ.fromList ['D', 'C', 'M'], DQ.fromList ['P']]
       let moved = move 1 3 stacks
       stacksToLists moved `shouldBe` [['N'], ['D', 'C', 'M'], ['P', 'Z']]
+
+  describe "moveSeveral" $ do
+    it "moves several entries from one stack to another" $ do
+      let stacks = V.fromList [DQ.fromList ['N', 'Z'], DQ.fromList ['D', 'C', 'M'], DQ.fromList ['P']]
+      let moved = moveSeveral 2 2 1 stacks
+      stacksToLists moved `shouldBe` [['N', 'Z', 'M', 'C'], ['D'], ['P']]
