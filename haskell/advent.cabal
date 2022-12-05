@@ -30,6 +30,9 @@ library
       Advent2021.Day3.Base
       Advent2021.Day3.Part1
       Advent2021.Day3.Part2
+      Advent2022.Day05.Base
+      Advent2022.Day05.Part1
+      Advent2022.Day05.Part2
       Advent2022.Day1
       Advent2022.Day2.Base
       Advent2022.Day2.Part1
@@ -50,6 +53,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , dequeue
     , heap
     , hspec
     , split
@@ -67,6 +71,7 @@ executable advent-exe
       advent
     , base >=4.7 && <5
     , containers
+    , dequeue
     , heap
     , hspec
     , split
@@ -80,6 +85,9 @@ test-suite advent-test
       Advent2021.Day3.BaseSpec
       Advent2021.Day3.Part1Spec
       Advent2021.Day3.Part2Spec
+      Advent2022.Day05.BaseSpec
+      Advent2022.Day05.Part1Spec
+      Advent2022.Day05.Part2Spec
       Advent2022.Day2.BaseSpec
       Advent2022.Day2.Part1Spec
       Advent2022.Day2.Part2Spec
@@ -97,6 +105,7 @@ test-suite advent-test
       advent
     , base >=4.7 && <5
     , containers
+    , dequeue
     , heap
     , hspec
     , split
