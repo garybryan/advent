@@ -1,18 +1,18 @@
 module Main (main) where
 
-import qualified Advent2021.Day1
-import qualified Advent2021.Day2
-import qualified Advent2021.Day3.Part1
-import qualified Advent2021.Day3.Part2
+import qualified Advent2021.Day01
+import qualified Advent2021.Day02
+import qualified Advent2021.Day03.Part1
+import qualified Advent2021.Day03.Part2
 import qualified Advent2022.Day05.Part1
 import qualified Advent2022.Day05.Part2
-import qualified Advent2022.Day1
-import qualified Advent2022.Day2.Part1
-import qualified Advent2022.Day2.Part2
-import qualified Advent2022.Day3.Part1
-import qualified Advent2022.Day3.Part2
-import qualified Advent2022.Day4.Part1
-import qualified Advent2022.Day4.Part2
+import qualified Advent2022.Day01
+import qualified Advent2022.Day02.Part1
+import qualified Advent2022.Day02.Part2
+import qualified Advent2022.Day03.Part1
+import qualified Advent2022.Day03.Part2
+import qualified Advent2022.Day04.Part1
+import qualified Advent2022.Day04.Part2
 import Lib.Run
 
 -- TODO implement a better run system:
@@ -21,33 +21,33 @@ import Lib.Run
 main :: IO ()
 main = do
   putStrLn "\n2021 day 1:"
-  runOnFile Advent2021.Day1.run "data/2021/1.txt"
+  runOnFile Advent2021.Day01.run "data/2021/1.txt"
 
   putStrLn "\n2021 day 2:"
-  runOnFile Advent2021.Day2.run "data/2021/2.txt"
+  runOnFile Advent2021.Day02.run "data/2021/2.txt"
 
   putStrLn "\n2021 day 3 part 1:"
-  runOnFile Advent2021.Day3.Part1.run "data/2021/3.txt"
+  runOnFile Advent2021.Day03.Part1.run "data/2021/3.txt"
   putStrLn "\n2021 day 3 part 2:"
-  runOnFile Advent2021.Day3.Part2.run "data/2021/3.txt"
+  runOnFile Advent2021.Day03.Part2.run "data/2021/3.txt"
 
   putStrLn "\n2022 day 1:"
-  runOnFile Advent2022.Day1.run "data/2022/1.txt"
+  runOnFile Advent2022.Day01.run "data/2022/1.txt"
 
   putStrLn "\n2022 day 2 part 1:"
-  runOnFile Advent2022.Day2.Part1.run "data/2022/2.txt"
+  runOnFile Advent2022.Day02.Part1.run "data/2022/2.txt"
   putStrLn "2022 day 2 part 2:"
-  runOnFile Advent2022.Day2.Part2.run "data/2022/2.txt"
+  runOnFile Advent2022.Day02.Part2.run "data/2022/2.txt"
 
   putStrLn "\n2022 day 3 part 1:"
-  runOnFile Advent2022.Day3.Part1.run "data/2022/3.txt"
+  runOnFile Advent2022.Day03.Part1.run "data/2022/3.txt"
   putStrLn "\n2022 day 3 part 2:"
-  runOnFile Advent2022.Day3.Part2.run "data/2022/3.txt"
+  runOnFile Advent2022.Day03.Part2.run "data/2022/3.txt"
 
   putStrLn "\n2022 day 4 part 1:"
-  runOnFile Advent2022.Day4.Part1.run "data/2022/4.txt"
+  runOnFile Advent2022.Day04.Part1.run "data/2022/4.txt"
   putStrLn "\n2022 day 4 part 2:"
-  runOnFile Advent2022.Day4.Part2.run "data/2022/4.txt"
+  runOnFile Advent2022.Day04.Part2.run "data/2022/4.txt"
 
   putStrLn "\n2022 day 5 part 1:"
   runOnFile Advent2022.Day05.Part1.run "data/2022/05.txt"

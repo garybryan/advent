@@ -25,24 +25,24 @@ source-repository head
 
 library
   exposed-modules:
-      Advent2021.Day1
-      Advent2021.Day2
-      Advent2021.Day3.Base
-      Advent2021.Day3.Part1
-      Advent2021.Day3.Part2
+      Advent2021.Day01
+      Advent2021.Day02
+      Advent2021.Day03.Base
+      Advent2021.Day03.Part1
+      Advent2021.Day03.Part2
+      Advent2022.Day01
+      Advent2022.Day02.Base
+      Advent2022.Day02.Part1
+      Advent2022.Day02.Part2
+      Advent2022.Day03.Base
+      Advent2022.Day03.Part1
+      Advent2022.Day03.Part2
+      Advent2022.Day04.Base
+      Advent2022.Day04.Part1
+      Advent2022.Day04.Part2
       Advent2022.Day05.Base
       Advent2022.Day05.Part1
       Advent2022.Day05.Part2
-      Advent2022.Day1
-      Advent2022.Day2.Base
-      Advent2022.Day2.Part1
-      Advent2022.Day2.Part2
-      Advent2022.Day3.Base
-      Advent2022.Day3.Part1
-      Advent2022.Day3.Part2
-      Advent2022.Day4.Base
-      Advent2022.Day4.Part1
-      Advent2022.Day4.Part2
       Lib.Read
       Lib.Run
   other-modules:
@@ -82,21 +82,21 @@ test-suite advent-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Advent2021.Day3.BaseSpec
-      Advent2021.Day3.Part1Spec
-      Advent2021.Day3.Part2Spec
+      Advent2021.Day03.BaseSpec
+      Advent2021.Day03.Part1Spec
+      Advent2021.Day03.Part2Spec
+      Advent2022.Day02.BaseSpec
+      Advent2022.Day02.Part1Spec
+      Advent2022.Day02.Part2Spec
+      Advent2022.Day03.BaseSpec
+      Advent2022.Day03.Part1Spec
+      Advent2022.Day03.Part2Spec
+      Advent2022.Day04.BaseSpec
+      Advent2022.Day04.Part1Spec
+      Advent2022.Day04.Part2Spec
       Advent2022.Day05.BaseSpec
       Advent2022.Day05.Part1Spec
       Advent2022.Day05.Part2Spec
-      Advent2022.Day2.BaseSpec
-      Advent2022.Day2.Part1Spec
-      Advent2022.Day2.Part2Spec
-      Advent2022.Day3.BaseSpec
-      Advent2022.Day3.Part1Spec
-      Advent2022.Day3.Part2Spec
-      Advent2022.Day4.BaseSpec
-      Advent2022.Day4.Part1Spec
-      Advent2022.Day4.Part2Spec
       Paths_advent
   hs-source-dirs:
       test
