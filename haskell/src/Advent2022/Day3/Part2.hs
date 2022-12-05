@@ -1,10 +1,7 @@
 module Advent2022.Day3.Part2 (priorityGroupsOf3, run) where
 
 import Advent2022.Day3.Base
-
-groupsOf :: Int -> [a] -> [[a]]
-groupsOf _ [] = []
-groupsOf k l = take k l : groupsOf k (drop k l)
+import Lib.Groups
 
 priorityGroupsOf3 :: [String] -> Int
 priorityGroupsOf3 = sum . map (priority . commonItemAll) . groupsOf 3

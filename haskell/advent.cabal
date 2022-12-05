@@ -43,6 +43,7 @@ library
       Advent2022.Day4.Base
       Advent2022.Day4.Part1
       Advent2022.Day4.Part2
+      Lib.Groups
       Lib.Read
       Lib.Run
   other-modules:
