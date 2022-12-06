@@ -1,5 +1,6 @@
-module Advent2022.Day06.Base (indexAfterUniquePrefix) where
+module Advent2022.Day06.Base (indexAfterUniquePrefix, parseLines) where
 
+import Data.Maybe
 import qualified Data.Set as Set
 
 numUniques :: (Ord a) => [a] -> Int
@@ -16,3 +17,7 @@ indexAfterUniquePrefix n = go 0
     go i xs'
       | uniquePrefix n xs' = i + n
       | otherwise = go (i + 1) (tail xs')
+
+-- There's only one line to parse, and it's already a string: easiest parse yet!
+parseLines :: [String] -> String
+parseLines ss = fromMaybe (error "Empty file") (listToMaybe ss)

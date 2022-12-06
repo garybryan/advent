@@ -11,3 +11,7 @@ spec = do
       indexAfterUniquePrefix 4 "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" `shouldBe` 10
       indexAfterUniquePrefix 14 "bvwbjplbgvbhsrlpgdmjqwftvncz" `shouldBe` 23
       indexAfterUniquePrefix 14 "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg" `shouldBe` 29
+
+  describe "parseLines" $ do
+    it "Gives the first line of the input" $ do
+      parseLines ["abc", "", "xyz"] `shouldBe` "abc"
