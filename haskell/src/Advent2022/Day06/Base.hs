@@ -4,7 +4,7 @@ import Data.Maybe
 import qualified Data.Set as Set
 
 numUniques :: (Ord a) => [a] -> Int
-numUniques = length . Set.fromList
+numUniques = Set.size . Set.fromList
 
 uniquePrefix :: (Ord a) => Int -> [a] -> Bool
 uniquePrefix n xs = n == numUniques (take n xs)
