@@ -18,7 +18,7 @@ getCommandVector ("forward", n) = (0, n)
 getCommandVector (_, _) = (0, 0)
 
 addVectors :: Vector -> Vector -> Vector
-addVectors a = Data.Bifunctor.bimap (fst a +) (snd a +)
+addVectors a = bimap (fst a +) (snd a +)
 
 getFinalPosition :: [Command] -> Vector
 getFinalPosition = foldr (addVectors . getCommandVector) (0, 0)

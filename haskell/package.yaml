@@ -27,6 +27,7 @@ dependencies:
   - containers
   - split
   - hspec
+  - matrix
 
 ghc-options:
   - -Wall
