@@ -52,6 +52,9 @@ library
       Advent2022.Day08.Base
       Advent2022.Day08.Part1
       Advent2022.Day08.Part2
+      Advent2022.Day09.Base
+      Advent2022.Day09.Part1
+      Advent2022.Day09.Part2
       Lib.Read
       Lib.Run
   other-modules:
@@ -117,6 +120,7 @@ test-suite advent-test
       Advent2022.Day08.BaseSpec
       Advent2022.Day08.Part1Spec
       Advent2022.Day08.Part2Spec
+      Advent2022.Day09.BaseSpec
       Paths_advent
   hs-source-dirs:
       test
