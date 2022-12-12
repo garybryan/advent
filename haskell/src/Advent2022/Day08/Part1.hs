@@ -14,6 +14,14 @@ import Advent2022.Day08.Base
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
 
+{-
+  This solution goes for functional cleverness over efficiency. Time complexity
+  is `O(n)` for `n` trees, which is optimal, but a typical procedural approach
+  of maintaining a single visibility matrix is almost certainly faster than
+  doing a whole bunch of matrix operations and composing four of them together
+  as is done here.
+-}
+
 type VisMatrix = M.Matrix Bool
 
 vis :: (Bool, Int) -> Int -> (Bool, Int)
