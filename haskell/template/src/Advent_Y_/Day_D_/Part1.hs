@@ -1,4 +1,8 @@
-module Advent_Y_.Day_D_.Part1 (doThing, run) where
+module Advent_Y_.Day_D_.Part1
+  ( doThing,
+    run,
+  )
+where
 
 import Advent_Y_.Day_D_.Base
 
