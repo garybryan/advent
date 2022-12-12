@@ -21,6 +21,8 @@ import qualified Advent2022.Day08.Part1
 import qualified Advent2022.Day08.Part2
 import qualified Advent2022.Day09.Part1
 import qualified Advent2022.Day09.Part2
+import qualified Advent2022.Day10.Part1
+import qualified Advent2022.Day10.Part2
 import Lib.Run
 
 -- TODO implement a better run system:
@@ -79,4 +81,10 @@ main = do
 
   putStrLn "\n2022 day 9 part 1:"
   runOnFile Advent2022.Day09.Part1.run "data/2022/09.txt"
+  putStrLn "\n2022 day 9 part 2:"
   runOnFile Advent2022.Day09.Part2.run "data/2022/09.txt"
+
+  putStrLn "\n2022 day 10 part 1:"
+  runOnFile Advent2022.Day10.Part1.run "data/2022/10.txt"
+  putStrLn "\n2022 day 10 part 2:"
+  runOnFile Advent2022.Day10.Part2.run "data/2022/10.txt"
