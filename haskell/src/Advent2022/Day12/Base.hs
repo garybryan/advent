@@ -2,7 +2,7 @@ module Advent2022.Day12.Base
   ( Point,
     Hills,
     parseLines,
-    weight1Neighbours,
+    accessibleNeighbours,
     initialDistances,
     bfs,
     bfsFrom,
@@ -25,7 +25,8 @@ import Lib.Matrix (matrixFoldr)
   we've found the shortest path. No need to bust out the Dijkstra... yet.
 
   Use a matrix to keep track of the distances for each position on the grid,
-  with zero for unexplored nodes. A Set would be another good option.
+  with zero for unexplored nodes. A Map would be another good option, or a Set
+  to track seen nodes and just put distances in the queue... Many choices.
 
   In Haskell, Chars are in the Ord class but not Num, so we can compare them
   but not subtract them to get height differences. So might as well just parse
@@ -61,7 +62,7 @@ findPoint :: Char -> [String] -> Point
 findPoint c ss = go $ zip [1 ..] ss
   where
     go :: [(Int, String)] -> Point
-    go [] = error $ "Character " ++ show c
+    go [] = error $ "Character " ++ show c ++ " not found"
     go ((row, s) : rsAndSs) = case elemIndex c s of
       Nothing -> go rsAndSs
       Just col0 -> (row, col0 + 1)
@@ -78,8 +79,8 @@ validNeighbours hs = filter validPoint
 weight :: Point -> Point -> Hills -> Int
 weight p1 p2 hs = hs M.! p2 - hs M.! p1
 
-weight1Neighbours :: Point -> Hills -> [Point]
-weight1Neighbours p hs = filter weight1 $ validNeighbours hs (neighbours p)
+accessibleNeighbours :: Point -> Hills -> [Point]
+accessibleNeighbours p hs = filter weight1 $ validNeighbours hs (neighbours p)
   where
     weight1 :: Point -> Bool
     weight1 nP = weight p nP hs <= 1
@@ -89,9 +90,9 @@ initialDistances hs = M.zero (M.nrows hs) (M.ncols hs)
 
 -- TL;DR:
 -- Pop a point off the queue. If it's the target then return the distance to it.
--- Otherwise find all the unseen weight-1 neighbours, put them onto the queue,
--- update their distances to the distance to the current point plus one, and
--- keep on searchin'.
+-- Otherwise find all the unseen accessible neighbours, put them onto the
+-- queue, set their distances to the distance to the current point plus one,
+-- and keep on searchin'.
 bfs :: Point -> PointQ -> Hills -> Distances -> Maybe Int
 bfs target q hs ds
   | q == DQ.empty = Nothing
@@ -99,10 +100,12 @@ bfs target q hs ds
   | otherwise = bfs target q'' hs ds'
   where
     (p, q') = fromJust $ DQ.popFront q -- We've checked the queue's not empty, so we can live dangerously.
-    ns = filter ((== 0) . (M.!) ds) (weight1Neighbours p hs)
+    ns = filter ((== 0) . (M.!) ds) (accessibleNeighbours p hs)
     q'' = foldl DQ.pushBack q' ns
     dP = ds M.! p
     ds' = matrixFoldr (M.setElem (dP + 1)) ds ns
 
 bfsFrom :: Point -> Point -> Hills -> Int
-bfsFrom start end hs = fromMaybe (error "No path found") $ bfs end (DQ.fromList [start]) hs (initialDistances hs)
+bfsFrom start end hs =
+  fromMaybe (error "No path found") $
+    bfs end (DQ.fromList [start]) hs (initialDistances hs)

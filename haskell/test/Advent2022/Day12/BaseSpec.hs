@@ -39,15 +39,15 @@ spec = do
                      (3, 2)
                    )
 
-  describe "weight1Neighbours" $ do
+  describe "accessibleNeighbours" $ do
     it "finds the neighbours of a point that are at most one step higher" $ do
-      Set.fromList (weight1Neighbours (1, 1) hills) `shouldBe` Set.fromList [(1, 2), (2, 1)]
+      Set.fromList (accessibleNeighbours (1, 1) hills) `shouldBe` Set.fromList [(1, 2), (2, 1)]
 
     it "finds the neighbours of a point that are at the same level" $ do
-      Set.fromList (weight1Neighbours (3, 3) hills) `shouldBe` Set.fromList [(3, 2), (2, 3), (4, 3)]
+      Set.fromList (accessibleNeighbours (3, 3) hills) `shouldBe` Set.fromList [(3, 2), (2, 3), (4, 3)]
 
     it "finds the neighbours of a point that are lower or one step higher" $ do
-      Set.fromList (weight1Neighbours (4, 4) hills) `shouldBe` Set.fromList [(4, 3), (3, 4), (4, 5), (5, 4)]
+      Set.fromList (accessibleNeighbours (4, 4) hills) `shouldBe` Set.fromList [(4, 3), (3, 4), (4, 5), (5, 4)]
 
   describe "bfs" $ do
     it "finds the shortest path to a target point" $ do
