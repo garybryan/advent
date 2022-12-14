@@ -14,6 +14,7 @@ import qualified Data.Dequeue as DQ
 import Data.List (elemIndex)
 import qualified Data.Matrix as M
 import Data.Maybe
+import Lib.Matrix (matrixFoldr)
 
 {-
   Looks like a fairly classic shortest-path graph search, with the limitation
@@ -68,7 +69,7 @@ validNeighbours hs = filter validPoint
   where
     validPoint (row, col) = row >= 1 && col >= 1 && row <= M.nrows hs && col <= M.ncols hs
 
--- Weight is not symmetric, since we can only step up 1 but can step down any.
+-- Weight is not commutative, since we can only step up 1 but can step down any.
 weight :: Point -> Point -> Hills -> Int
 weight p1 p2 hs = hs M.! p2 - hs M.! p1
 
@@ -80,10 +81,6 @@ weight1Neighbours p hs = filter weight1 $ validNeighbours hs (neighbours p)
 
 initialDistances :: Hills -> Distances
 initialDistances hs = M.zero (M.nrows hs) (M.ncols hs)
-
-matrixFoldr :: (a -> M.Matrix b -> M.Matrix b) -> M.Matrix b -> [a] -> M.Matrix b
-matrixFoldr _ z [] = z
-matrixFoldr f z (m : ms) = f m (matrixFoldr f z ms)
 
 -- TL;DR:
 -- Pop a point off the queue. If it's the target then return the distance to it.

@@ -13,6 +13,7 @@ where
 import Advent2022.Day08.Base
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
+import Lib.Matrix (matrixFoldr)
 
 {-
   This solution goes for functional cleverness over efficiency. Time complexity
@@ -49,11 +50,6 @@ rightVisMatrix = reverseMatrix . leftVisMatrix . reverseMatrix
 
 bottomVisMatrix :: TreeMatrix -> VisMatrix
 bottomVisMatrix = M.transpose . reverseMatrix . leftVisMatrix . reverseMatrix . M.transpose
-
--- Data.Matrix doesn't implement matrix folding, so I guess I have to do it.
-matrixFoldr :: (a -> M.Matrix b -> M.Matrix b) -> M.Matrix b -> [a] -> M.Matrix b
-matrixFoldr _ z [] = z
-matrixFoldr f z (m : ms) = f m (matrixFoldr f z ms)
 
 visMatrix :: TreeMatrix -> VisMatrix
 visMatrix m = matrixFoldr (M.elementwise (||)) initial ms
