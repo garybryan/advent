@@ -10,6 +10,14 @@ import qualified Data.Dequeue as DQ
 import qualified Data.Matrix as M
 import Data.Maybe (catMaybes)
 
+{-
+  This just does it the most obvious way: do a search from every potential
+  starting point. There are ways to optimise this, but I'm not going there for
+  now.
+
+  Complexity O(k * n) for n trees and k starting points.
+-}
+
 -- Find every point height 0 (from char 'a').
 -- Again it would be a little faster to do this during the parse, but it's a
 -- one-off job and to get part 2 done quickly with the part 1 code this is nice

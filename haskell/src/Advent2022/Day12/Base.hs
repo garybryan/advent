@@ -18,18 +18,23 @@ import Lib.Matrix (matrixFoldr)
 
 {-
   Looks like a fairly classic shortest-path graph search, with the limitation
-  that you can only go to the next node if the difference between heights is 1.
-  This limitation turns it into an unweighted graph, since all edges have equal
-  weight (1 step), so we can just use a bog-standard Breadth First Search where
-  we track the distance so far and as soon as we hit the end node we've found
-  the shortest path. No need to bust out the Dijkstra... yet.
+  that you can only go to the next node if the difference between heights is at
+  most 1. This limitation turns it into an unweighted graph, since all edges
+  have equal weight (1 step), so we can just use a bog-standard Breadth First
+  Search where we track the distance so far and as soon as we hit the end node
+  we've found the shortest path. No need to bust out the Dijkstra... yet.
 
   Use a matrix to keep track of the distances for each position on the grid,
-  with zero for unexplored nodes.
+  with zero for unexplored nodes. A Set would be another good option.
 
   In Haskell, Chars are in the Ord class but not Num, so we can compare them
   but not subtract them to get height differences. So might as well just parse
   them all into Ints and deal with these.
+
+  Complexity O(n) where n is number of hills. The complexity of a graph search
+  is O(V + E) for V vertices and E edges, since at worst it has to process each
+  once, and here the edges scale linearly with the vertices as there are 4
+  potential edges per vertex.
 -}
 
 type Hills = M.Matrix Int
