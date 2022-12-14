@@ -61,6 +61,9 @@ library
       Advent2022.Day11.Base
       Advent2022.Day11.Part1
       Advent2022.Day11.Part2
+      Advent2022.Day12.Base
+      Advent2022.Day12.Part1
+      Advent2022.Day12.Part2
       Lib.Read
       Lib.Run
       Lib.Top
@@ -132,6 +135,9 @@ test-suite advent-test
       Advent2022.Day10.Part1Spec
       Advent2022.Day10.Part2Spec
       Advent2022.Day11.BaseSpec
+      Advent2022.Day12.BaseSpec
+      Advent2022.Day12.Part1Spec
+      Advent2022.Day12.Part2Spec
       Paths_advent
   hs-source-dirs:
       test

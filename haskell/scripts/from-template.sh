@@ -43,6 +43,6 @@ copy_file() {
     sed_i "s/_D_/$day/g" $path_day
 }
 
-for f in $(find template/ -type f); do
+for f in $(find template -type f); do
     copy_file "$f"
 done
