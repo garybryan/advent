@@ -28,6 +28,7 @@ dependencies:
   - split
   - hspec
   - matrix
+  - parsec
 
 ghc-options:
   - -Wall
