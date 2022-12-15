@@ -8,26 +8,33 @@ module Advent2022.Day13.Part2
 where
 
 import Advent2022.Day13.Base
-import Data.List (elemIndex, sort)
-import Data.Maybe (fromMaybe)
+import Data.List (sort)
+import qualified Data.Set as Set
 
 parseLines :: [String] -> [Packet]
 parseLines = map parsePacket . filter (/= "")
 
-divider :: Int -> Packet
-divider x = PPacket [PPacket [PInt x]]
+dividers :: [Int]
+dividers = [2, 6]
+
+dividerPacket :: Int -> Packet
+dividerPacket x = PPacket [PPacket [PInt x]]
 
 addDividers :: [Packet] -> [Packet]
-addDividers = (:) (divider 2) . (:) (divider 6)
+addDividers = foldr (:) (map dividerPacket dividers)
 
-dividerIndices :: [Packet] -> (Int, Int)
-dividerIndices ps = (packetIndex 2, packetIndex 6)
+dividerIndices :: [Packet] -> [Int]
+dividerIndices = map fst . filter (isDivider . snd) . zip [1 ..]
   where
-    packetIndex :: Int -> Int
-    packetIndex x = fromMaybe (error $ "Divider packet not found" ++ show x) (elemIndex (divider x) ps) + 1
+    ds = Set.fromList dividers
+    isDivider :: Packet -> Bool
+    isDivider (PPacket [PPacket [PInt x]])
+      | x `Set.member` ds = True
+      | otherwise = False
+    isDivider _ = False
 
 decoderKey :: [Packet] -> Int
-decoderKey = uncurry (*) . dividerIndices . sort . addDividers
+decoderKey = product . dividerIndices . sort . addDividers
 
 decoderKeyFromLines :: [String] -> Int
 decoderKeyFromLines = decoderKey . parseLines

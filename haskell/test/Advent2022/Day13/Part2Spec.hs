@@ -49,7 +49,7 @@ spec = do
 
   describe "dividerIndices" $ do
     it "finds the 1-based indexes of dividers in a sorted packet list" $ do
-      dividerIndices (sort (addDividers packets)) `shouldBe` (10, 14)
+      dividerIndices (sort (addDividers packets)) `shouldBe` [10, 14]
 
   describe "decoderKey" $ do
     it "finds the decoder key of a packet list" $ do
