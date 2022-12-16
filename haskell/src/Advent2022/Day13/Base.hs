@@ -6,6 +6,7 @@ module Advent2022.Day13.Base
   )
 where
 
+import Lib.Parsing (intParser)
 import Text.Parsec
 import Text.Parsec.String
 
@@ -18,7 +19,7 @@ type Pair = (Packet, Packet)
 -- Focusing on solving the problem first, then making it nice.
 
 packetIntParser :: Parser Packet
-packetIntParser = PInt . read <$> many1 digit
+packetIntParser = PInt <$> intParser
 
 packetListParser :: Parser Packet
 packetListParser = PPacket <$> (packetParser <|> packetIntParser) `sepBy` char ','
@@ -27,7 +28,7 @@ packetParser :: Parser Packet
 packetParser = between (char '[') (char ']') packetListParser
 
 parsePacket :: String -> Packet
-parsePacket s = case parse (packetParser <* eof) "" s of
+parsePacket s = case parse packetParser "" s of
   Left err -> error $ "parse error: " ++ show err
   Right p -> p
 
