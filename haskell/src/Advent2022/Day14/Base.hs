@@ -10,24 +10,18 @@ module Advent2022.Day14.Base
 where
 
 import qualified Data.Set as Set
-import Lib.Parsing (intParser)
+import Lib.Parsing (parseOrError, pointParser)
+import Lib.Types (Point)
 import Text.Parsec
 import Text.Parsec.String
 
-type Point = (Int, Int)
-
 type Points = Set.Set Point
-
-pointParser :: Parser Point
-pointParser = (,) <$> (intParser <* char ',') <*> intParser
 
 lineParser :: Parser [Point]
 lineParser = pointParser `sepBy` string " -> "
 
 parseLine :: String -> [Point]
-parseLine s = case parse lineParser "" s of
-  Left err -> error $ "Parse error: " ++ show err
-  Right p -> p
+parseLine = parseOrError lineParser
 
 {-
   Use a Set of Points to track which tiles are full; it doesn't matter whether

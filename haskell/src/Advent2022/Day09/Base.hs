@@ -2,8 +2,7 @@ module Advent2022.Day09.Base (moveTail, applyMoveAndUpdate, applyLines, numTailV
 
 import Data.Bifunctor (bimap, first, second)
 import qualified Data.Set as Set
-
-type Point = (Int, Int)
+import Lib.Types (Point)
 
 type PointSet = Set.Set Point
 

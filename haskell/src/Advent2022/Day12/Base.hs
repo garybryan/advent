@@ -15,6 +15,7 @@ import Data.List (elemIndex)
 import qualified Data.Matrix as M
 import Data.Maybe
 import Lib.Matrix (matrixFoldr)
+import Lib.Types (Point)
 
 {-
   Looks like a fairly classic shortest-path graph search, with the limitation
@@ -41,8 +42,6 @@ import Lib.Matrix (matrixFoldr)
 type Hills = M.Matrix Int
 
 type Distances = M.Matrix Int
-
-type Point = (Int, Int)
 
 type PointQ = DQ.BankersDequeue Point
 

@@ -6,7 +6,7 @@ module Advent2022.Day13.Base
   )
 where
 
-import Lib.Parsing (intParser)
+import Lib.Parsing (intParser, parseOrError)
 import Text.Parsec
 import Text.Parsec.String
 
@@ -28,9 +28,7 @@ packetParser :: Parser Packet
 packetParser = between (char '[') (char ']') packetListParser
 
 parsePacket :: String -> Packet
-parsePacket s = case parse packetParser "" s of
-  Left err -> error $ "parse error: " ++ show err
-  Right p -> p
+parsePacket = parseOrError packetParser
 
 comparePackets :: Packet -> Packet -> Ordering
 comparePackets (PInt l) (PInt r) = compare l r
