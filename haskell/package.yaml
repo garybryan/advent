@@ -29,6 +29,7 @@ dependencies:
   - hspec
   - matrix
   - parsec
+  - time
 
 ghc-options:
   - -Wall

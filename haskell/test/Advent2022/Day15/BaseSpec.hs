@@ -35,6 +35,14 @@ spec = do
                      ((9, 16), 1)
                    ]
 
-  describe "xBounds" $ do
-    it "gets the lower and upper x-axis bounds for the area containing all sensors' ranges" $ do
-      xBounds (sensorsAndRadii ssAndBs) `shouldBe` (-8, 28)
+  describe "rowSensorRange" $ do
+    -- The sensor at (13, 2)
+    let sAndR = sensorsAndRadii ssAndBs !! 2
+
+    it "gives the range covered by a sensor in a single row" $ do
+      rowSensorRange 1 sAndR `shouldBe` Just (11, 15)
+      rowSensorRange 2 sAndR `shouldBe` Just (10, 16)
+      rowSensorRange 5 sAndR `shouldBe` Just (13, 13)
+
+    it "gives Nothing if the sensor does not cover the row" $ do
+      rowSensorRange 6 sAndR `shouldBe` Nothing
