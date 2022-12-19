@@ -26,6 +26,10 @@ import Text.Parsec.String
   Could approximate with a greedy algorithm of always going for the valve with
   the highest pressure, but that won't always be optimal, as shown in the
   example.
+  (Although an optimal greedy algorithm might well be possible, if you do some
+  calculations to work out the next valve to open based on the pressure after
+  opening it multiplied by the remaining time minus the time to get there,
+  but knowing the time to get there would require all-pairs shortest paths...)
 
   I tried a backtracking DFS solution first but it was just far too slow...
   Bottom-up dynamic programming to the rescue.
@@ -145,6 +149,41 @@ potentialPressure :: Int -> TableCell -> Int
 potentialPressure remainingMins (Cell p r _) = p + r * remainingMins
 potentialPressure _ _ = 0
 
+nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
+nonOpenChoices table minute valveI vm
+  | minute == 1 && isReachable (table M.! (minute, valveI)) = [emptyCell]
+  | minute == 1 = []
+  | otherwise = mapMaybe prevWithCurPressure adj
+  where
+    Valve _ adj = fromJust $ Map.lookup valveI vm
+    prevWithCurPressure vi = case table M.! (minute - 1, vi) of
+      Cell p r s -> Just $ Cell (p + r) r s
+      _ -> Nothing
+
+alreadyOpen :: ValveIndex -> TableCell -> Bool
+alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
+alreadyOpen _ _ = False
+
+addValveToSet :: ValveIndex -> TableCell -> TableCell
+addValveToSet valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
+addValveToSet _ c = c
+
+openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
+openChoices table minute valveI vm = map (addValveToSet valveI) choices
+  where
+    Valve rate adj = fromJust $ Map.lookup valveI vm
+    -- TODO refactor maybe func to common function to amend a cell if it's reachable
+    prevWithCurPressureOpening vi = case table M.! (minute - 2, vi) of
+      Cell p r s -> Just $ Cell (p + r * 2) (r + rate) s
+      _ -> Nothing
+    openThisValve = case table M.! (minute - 1, valveI) of
+      Cell p r s -> Just $ Cell (p + r) (r + rate) s
+      _ -> Nothing
+    adjChoices
+      | minute <= 2 = []
+      | otherwise = map prevWithCurPressureOpening adj
+    choices = filter (not . alreadyOpen valveI) $ catMaybes $ [openThisValve | minute > 1] ++ adjChoices
+
 -- This could be optimised to use O(V) space rather than O(V*M), since values
 -- are only derived from the previous two rows, but that's an exercise for later.
 -- First I should tidy it up and refactor some logic out of the massive "where" clause.
@@ -155,37 +194,13 @@ dp limit maxValveI vm table minute valveI
   | otherwise = recurse table' minute (valveI + 1)
   where
     recurse = dp limit maxValveI vm
-    Valve curValveRate adj = fromJust $ Map.lookup valveI vm
     maxByPotentialPressure = maximumBy $ comparing (potentialPressure (limit - minute))
-    prevWithCurPressure vi = case table M.! (minute - 1, vi) of
-      Cell p r s -> Just $ Cell (p + r) r s
-      _ -> Nothing
-    noOpenChoices
-      | minute == 1 && isReachable (table M.! (minute, valveI)) = [emptyCell]
-      | minute == 1 = []
-      | otherwise = mapMaybe prevWithCurPressure adj
-    bestNoOpenChoice
-      | null noOpenChoices = Nothing
-      | otherwise = Just $ maxByPotentialPressure noOpenChoices
-    prevWithCurPressureOpening vi = case table M.! (minute - 2, vi) of
-      Cell p r ovs -> Just $ Cell (p + r * 2) (r + curValveRate) ovs
-      _ -> Nothing
-    alreadyOpen (Cell _ _ ovs) = valveI `IntSet.member` ovs
-    alreadyOpen _ = False
-    addValveToSet (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
-    addValveToSet c = c
-    adjOpenChoices
-      | minute <= 2 = []
-      | otherwise = filter (not . alreadyOpen) $ mapMaybe prevWithCurPressureOpening adj
-    openChoices = Cell 0 curValveRate IntSet.empty : adjOpenChoices
-    bestOpenChoice
-      | null adjOpenChoices = Nothing
-      | otherwise = Just $ addValveToSet (maxByPotentialPressure openChoices)
-    bestChoices = catMaybes [bestNoOpenChoice, bestOpenChoice]
-    bestChoice = maxByPotentialPressure bestChoices
+    nocs = nonOpenChoices table minute valveI vm
+    ocs = openChoices table minute valveI vm
+    choices = nocs ++ ocs
     table'
-      | null bestChoices = table
-      | otherwise = M.setElem bestChoice (minute, valveI) table
+      | null choices = table
+      | otherwise = M.setElem (maxByPotentialPressure choices) (minute, valveI) table
 
 makeTable :: Int -> ValveMap -> Int -> DPTable
 makeTable limit vm startIndex = dp limit nValves vm table 1 1
@@ -203,3 +218,18 @@ maxPressure limit vm startIndex = maximum $ mapMaybe pressure (V.toList finalRow
     finalRow = M.getRow (limit + 1) finalTable
     pressure (Cell p _ _) = Just p
     pressure _ = Nothing
+
+valveMap :: ValveMap
+valveMap =
+  Map.fromList
+    [ (1, Valve 0 [4, 9, 2]),
+      (2, Valve 13 [3, 1]),
+      (3, Valve 2 [4, 2]),
+      (4, Valve 20 [3, 1, 5]),
+      (5, Valve 3 [6, 4]),
+      (6, Valve 0 [5, 7]),
+      (7, Valve 0 [6, 8]),
+      (8, Valve 22 [7]),
+      (9, Valve 0 [1, 10]),
+      (10, Valve 21 [9])
+    ]
