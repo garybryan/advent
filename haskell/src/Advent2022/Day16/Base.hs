@@ -49,10 +49,11 @@ import Text.Parsec.String
   To avoid unnecessary work, valves with flow rate zero are not considered for
   opening.
 
-  For opening a valve, all the possibilties for reaching it from adjacent
-  nodes are considered so that the optimal path to take before opening it can
-  be selected. Since moving to and then opening a valve takes 2 minutes, the
-  rates from adjacent valves on paths 2 minutes ago on which this valve has not
+  For opening a valve, all the possibilties for reaching it from adjacent nodes
+  are considered, as well as opening it from already being at it if it's not
+  already open, so that the optimal path to take before opening it can be
+  selected. Since moving to and then opening a valve takes 2 minutes, the rates
+  from adjacent valves on paths 2 minutes ago on which this valve has not
   already been opened (and their pressures plus 2 times the rate at that time,
   to get the current pressure at the time of opening this valve) are
   considered.
@@ -149,6 +150,13 @@ potentialPressure :: Int -> TableCell -> Int
 potentialPressure remainingMins (Cell p r _) = p + r * remainingMins
 potentialPressure _ _ = 0
 
+amendIfReachable :: ((Int, Int) -> (Int, Int)) -> DPTable -> (Int, Int) -> Maybe TableCell
+amendIfReachable f table pos = case table M.! pos of
+  Cell p r s -> Just $ Cell p' r' s
+    where
+      (p', r') = f (p, r)
+  _ -> Nothing
+
 nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
 nonOpenChoices table minute valveI vm
   | minute == 1 && isReachable (table M.! (minute, valveI)) = [emptyCell]
@@ -156,33 +164,26 @@ nonOpenChoices table minute valveI vm
   | otherwise = mapMaybe prevWithCurPressure adj
   where
     Valve _ adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = case table M.! (minute - 1, vi) of
-      Cell p r s -> Just $ Cell (p + r) r s
-      _ -> Nothing
+    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) table (minute - 1, vi)
 
 alreadyOpen :: ValveIndex -> TableCell -> Bool
 alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
 alreadyOpen _ _ = False
 
-addValveToSet :: ValveIndex -> TableCell -> TableCell
-addValveToSet valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
-addValveToSet _ c = c
+openValve :: ValveIndex -> TableCell -> TableCell
+openValve valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
+openValve _ c = c
 
 openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-openChoices table minute valveI vm = map (addValveToSet valveI) choices
+openChoices table minute valveI vm = map (openValve valveI) choices
   where
     Valve rate adj = fromJust $ Map.lookup valveI vm
-    -- TODO refactor maybe func to common function to amend a cell if it's reachable
-    prevWithCurPressureOpening vi = case table M.! (minute - 2, vi) of
-      Cell p r s -> Just $ Cell (p + r * 2) (r + rate) s
-      _ -> Nothing
-    openThisValve = case table M.! (minute - 1, valveI) of
-      Cell p r s -> Just $ Cell (p + r) (r + rate) s
-      _ -> Nothing
+    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) table (minute - 2, vi)
+    openCurValve = amendIfReachable (\(p, r) -> (p + r, r + rate)) table (minute - 1, valveI)
     adjChoices
       | minute <= 2 = []
-      | otherwise = map prevWithCurPressureOpening adj
-    choices = filter (not . alreadyOpen valveI) $ catMaybes $ [openThisValve | minute > 1] ++ adjChoices
+      | otherwise = map prevWithCurPressure adj
+    choices = filter (not . alreadyOpen valveI) $ catMaybes $ [openCurValve | minute > 1] ++ adjChoices
 
 -- This could be optimised to use O(V) space rather than O(V*M), since values
 -- are only derived from the previous two rows, but that's an exercise for later.
@@ -218,18 +219,3 @@ maxPressure limit vm startIndex = maximum $ mapMaybe pressure (V.toList finalRow
     finalRow = M.getRow (limit + 1) finalTable
     pressure (Cell p _ _) = Just p
     pressure _ = Nothing
-
-valveMap :: ValveMap
-valveMap =
-  Map.fromList
-    [ (1, Valve 0 [4, 9, 2]),
-      (2, Valve 13 [3, 1]),
-      (3, Valve 2 [4, 2]),
-      (4, Valve 20 [3, 1, 5]),
-      (5, Valve 3 [6, 4]),
-      (6, Valve 0 [5, 7]),
-      (7, Valve 0 [6, 8]),
-      (8, Valve 22 [7]),
-      (9, Valve 0 [1, 10]),
-      (10, Valve 21 [9])
-    ]
