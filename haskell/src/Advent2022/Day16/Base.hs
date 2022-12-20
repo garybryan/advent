@@ -1,10 +1,19 @@
 module Advent2022.Day16.Base
   ( Valve (..),
     ValveMap,
+    ValveIndex,
+    TableCell,
+    DPTable,
     parseLine,
     valveMapAndStartIndexFromLines,
     maxPressure,
     makeTable,
+    emptyCell,
+    isReachable,
+    potentialPressure,
+    amendIfReachable,
+    alreadyOpen,
+    openValve,
   )
 where
 
@@ -157,6 +166,14 @@ amendIfReachable f table pos = case table M.! pos of
       (p', r') = f (p, r)
   _ -> Nothing
 
+alreadyOpen :: ValveIndex -> TableCell -> Bool
+alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
+alreadyOpen _ _ = False
+
+openValve :: ValveIndex -> TableCell -> TableCell
+openValve valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
+openValve _ c = c
+
 nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
 nonOpenChoices table minute valveI vm
   | minute == 1 && isReachable (table M.! (minute, valveI)) = [emptyCell]
@@ -166,16 +183,10 @@ nonOpenChoices table minute valveI vm
     Valve _ adj = fromJust $ Map.lookup valveI vm
     prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) table (minute - 1, vi)
 
-alreadyOpen :: ValveIndex -> TableCell -> Bool
-alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
-alreadyOpen _ _ = False
-
-openValve :: ValveIndex -> TableCell -> TableCell
-openValve valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
-openValve _ c = c
-
 openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-openChoices table minute valveI vm = map (openValve valveI) choices
+openChoices table minute valveI vm
+  | rate == 0 = []
+  | otherwise = map (openValve valveI) choices
   where
     Valve rate adj = fromJust $ Map.lookup valveI vm
     prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) table (minute - 2, vi)
