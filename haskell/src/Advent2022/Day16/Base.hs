@@ -2,18 +2,12 @@ module Advent2022.Day16.Base
   ( Valve (..),
     ValveMap,
     ValveIndex,
-    TableCell,
-    DPTable,
     parseLine,
     valveMapAndStartIndexFromLines,
     maxPressure,
-    makeTable,
-    emptyCell,
     isReachable,
     potentialPressure,
-    amendIfReachable,
-    alreadyOpen,
-    openValve,
+    valveMap,
   )
 where
 
@@ -23,6 +17,7 @@ import qualified Data.Map as Map
 import qualified Data.Matrix as M
 import Data.Maybe (catMaybes, fromJust, fromMaybe, mapMaybe)
 import Data.Ord (comparing)
+import qualified Data.Set as Set
 import qualified Data.Vector as V
 import Lib.Parsing (intParser, parseOrError)
 import Text.Parsec
@@ -140,6 +135,7 @@ valveMapAndStartIndexFromLines = valveMapAndStartIndex . map parseLine
 data TableCell
   = Unreachable
   | Cell Int Int IntSet.IntSet
+  deriving (Eq, Ord)
 
 instance Show TableCell where
   -- More compact output than the derived Show, handy for debugging.
@@ -157,14 +153,13 @@ isReachable _ = True
 
 potentialPressure :: Int -> TableCell -> Int
 potentialPressure remainingMins (Cell p r _) = p + r * remainingMins
-potentialPressure _ _ = 0
+potentialPressure _ _ = -1
 
-amendIfReachable :: ((Int, Int) -> (Int, Int)) -> DPTable -> (Int, Int) -> Maybe TableCell
-amendIfReachable f table pos = case table M.! pos of
-  Cell p r s -> Just $ Cell p' r' s
-    where
-      (p', r') = f (p, r)
-  _ -> Nothing
+amendIfReachable :: ((Int, Int) -> (Int, Int)) -> TableCell -> Maybe TableCell
+amendIfReachable f (Cell p r s) = Just $ Cell p' r' s
+  where
+    (p', r') = f (p, r)
+amendIfReachable _ _ = Nothing
 
 alreadyOpen :: ValveIndex -> TableCell -> Bool
 alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
@@ -181,7 +176,7 @@ nonOpenChoices table minute valveI vm
   | otherwise = mapMaybe prevWithCurPressure adj
   where
     Valve _ adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) table (minute - 1, vi)
+    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) $ table M.! (minute - 1, vi)
 
 openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
 openChoices table minute valveI vm
@@ -189,8 +184,8 @@ openChoices table minute valveI vm
   | otherwise = map (openValve valveI) choices
   where
     Valve rate adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) table (minute - 2, vi)
-    openCurValve = amendIfReachable (\(p, r) -> (p + r, r + rate)) table (minute - 1, valveI)
+    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) $ table M.! (minute - 2, vi)
+    openCurValve = amendIfReachable (\(p, r) -> (p + r, r + rate)) $ table M.! (minute - 1, valveI)
     adjChoices
       | minute <= 2 = []
       | otherwise = map prevWithCurPressure adj
@@ -198,15 +193,15 @@ openChoices table minute valveI vm
 
 -- This could be optimised to use O(V) space rather than O(V*M), since values
 -- are only derived from the previous two rows, but that's an exercise for later.
--- First I should tidy it up and refactor some logic out of the massive "where" clause.
 dp :: Int -> Int -> ValveMap -> DPTable -> Int -> Int -> DPTable
 dp limit maxValveI vm table minute valveI
-  | minute > limit && valveI > maxValveI = table -- Finished bottom row.
+  | minute > limit + 1 = table -- Finished bottom row.
   | valveI > maxValveI = recurse table (minute + 1) 1 -- Finished a row; move onto next.
   | otherwise = recurse table' minute (valveI + 1)
   where
+    remainingMins = limit - minute
     recurse = dp limit maxValveI vm
-    maxByPotentialPressure = maximumBy $ comparing (potentialPressure (limit - minute))
+    maxByPotentialPressure = maximumBy $ comparing (potentialPressure remainingMins)
     nocs = nonOpenChoices table minute valveI vm
     ocs = openChoices table minute valveI vm
     choices = nocs ++ ocs
@@ -215,18 +210,33 @@ dp limit maxValveI vm table minute valveI
       | otherwise = M.setElem (maxByPotentialPressure choices) (minute, valveI) table
 
 makeTable :: Int -> ValveMap -> Int -> DPTable
-makeTable limit vm startIndex = dp limit nValves vm table 1 1
+makeTable limit vm startIndex = dp limit nValves vm initialTable 1 1
   where
-    table = M.matrix (limit + 1) nValves firstReachableOnly
     firstReachableOnly pos
       | pos == (1, startIndex) = emptyCell
       | otherwise = Unreachable
+    initialTable = M.matrix (limit + 1) nValves firstReachableOnly
     nValves = Map.size vm
 
 maxPressure :: Int -> ValveMap -> Int -> Int
-maxPressure limit vm startIndex = maximum $ mapMaybe pressure (V.toList finalRow)
+maxPressure limit vm startValveIndex = maximum $ mapMaybe pressure (V.toList finalRow)
   where
-    finalTable = makeTable limit vm startIndex
-    finalRow = M.getRow (limit + 1) finalTable
+    table = makeTable limit vm startValveIndex
+    finalRow = M.getRow (limit + 1) table
     pressure (Cell p _ _) = Just p
     pressure _ = Nothing
+
+valveMap :: ValveMap
+valveMap =
+  Map.fromList
+    [ (1, Valve 0 [4, 9, 2]),
+      (2, Valve 13 [3, 1]),
+      (3, Valve 2 [4, 2]),
+      (4, Valve 20 [3, 1, 5]),
+      (5, Valve 3 [6, 4]),
+      (6, Valve 0 [5, 7]),
+      (7, Valve 0 [6, 8]),
+      (8, Valve 22 [7]),
+      (9, Valve 0 [1, 10]),
+      (10, Valve 21 [9])
+    ]
