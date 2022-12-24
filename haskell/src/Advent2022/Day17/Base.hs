@@ -11,8 +11,9 @@ module Advent2022.Day17.Base
 where
 
 import Data.Bifunctor (bimap, first, second)
-import qualified Data.IntSet as IntSet
+import Data.Bits
 import qualified Data.Map as Map
+import Data.Word (Word8)
 import Lib.Types (Point)
 
 data JetMove = JetLeft | JetRight deriving (Eq, Ord, Show)
@@ -60,15 +61,16 @@ parseLine = map parseChar
   also check a point for settling in O (log n) time (looking up the y coord in
   the map plus looking up the x coord in the corresponding set).
 
+  (Update: now using bit vectors instead of sets, to save a little space.)
+
   Checking for settling only needs to be done for the bottommost points of a
   block, which could be pre-computed, but that seems like more hassle than
   it's worth for now.
 -}
 
--- TODO are they called rocks, not blocks?
 type Block = [Point]
 
-type XSet = IntSet.IntSet
+type XSet = Word8
 
 type Settled = Map.Map Int XSet
 
@@ -85,8 +87,14 @@ jetMoveN :: JetMove -> Int
 jetMoveN JetLeft = -1
 jetMoveN JetRight = 1
 
+xSetEntry :: Int -> Word8
+xSetEntry = bit . subtract 1
+
+inXSet :: Int -> XSet -> Bool
+inXSet x s = testBit s (x - 1)
+
 isPointSettled :: Settled -> Point -> Bool
-isPointSettled s (x, y) = x `IntSet.member` Map.findWithDefault IntSet.empty y s
+isPointSettled s (x, y) = x `inXSet` Map.findWithDefault 0 y s
 
 isOnSettled :: Settled -> Block -> Bool
 isOnSettled s = any $ isPointSettled s
@@ -108,7 +116,7 @@ jetPush s b jm
 settle :: Settled -> Block -> Settled
 settle = foldr insertPoint
   where
-    insertPoint (x, y) = Map.insertWith IntSet.union y (IntSet.singleton x)
+    insertPoint (x, y) = Map.insertWith (.|.) y (xSetEntry x)
 
 fallOne :: Block -> Block
 fallOne = map (second (subtract 1))

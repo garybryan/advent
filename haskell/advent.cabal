@@ -173,8 +173,6 @@ test-suite advent-test
       Advent2022.Day16.Part1Spec
       Advent2022.Day16.Part2Spec
       Advent2022.Day17.BaseSpec
-      Advent2022.Day17.Part1Spec
-      Advent2022.Day17.Part2Spec
       Paths_advent
   hs-source-dirs:
       test

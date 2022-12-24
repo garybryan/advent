@@ -1,16 +1,21 @@
 module Advent2022.Day17.BaseSpec (spec) where
 
 import Advent2022.Day17.Base
-import qualified Data.IntSet as IntSet
+import Data.Bits (bit)
 import qualified Data.Map as Map
+import Data.Word (Word8)
 import Test.Hspec
+
+-- Utility to avoid having to write bit vectors as numbers.
+bitsFor :: [Int] -> Word8
+bitsFor = sum . map ((bit :: Int -> Word8) . subtract 1)
 
 spec :: Spec
 spec = do
   let settled =
         Map.fromList
-          [ (2, IntSet.fromList [3, 4, 5]),
-            (3, IntSet.fromList [4])
+          [ (2, bitsFor [3, 4, 5]),
+            (3, bitsFor [4])
           ]
   let jetMoves =
         [ JetRight,
@@ -53,22 +58,22 @@ spec = do
       fallBlock Map.empty (head blocks) jetMoves
         `shouldBe` ( [JetLeft, JetRight, JetLeft, JetRight, JetLeft],
                      Map.fromList
-                       [ (1, IntSet.fromList [3, 4, 5, 6])
+                       [ (1, bitsFor [3, 4, 5, 6])
                        ]
                    )
 
     it "Falls and pushes a block until settled on top of another, leaving remaining jet moves" $ do
       let settled =
             Map.fromList
-              [ (1, IntSet.fromList [3, 4, 5, 6])
+              [ (1, bitsFor [3, 4, 5, 6])
               ]
       fallBlock settled (blocks !! 1) (drop 4 jetMoves)
         `shouldBe` ( [JetLeft],
                      Map.fromList
-                       [ (1, IntSet.fromList [3, 4, 5, 6]),
-                         (2, IntSet.fromList [4]),
-                         (3, IntSet.fromList [3, 4, 5]),
-                         (4, IntSet.fromList [4])
+                       [ (1, bitsFor [3, 4, 5, 6]),
+                         (2, bitsFor [4]),
+                         (3, bitsFor [3, 4, 5]),
+                         (4, bitsFor [4])
                        ]
                    )
 
@@ -76,10 +81,10 @@ spec = do
     it "Falls and pushes several blocks" $ do
       fallBlocks (take 2 blocks) jetMoves
         `shouldBe` Map.fromList
-          [ (1, IntSet.fromList [3, 4, 5, 6]),
-            (2, IntSet.fromList [4]),
-            (3, IntSet.fromList [3, 4, 5]),
-            (4, IntSet.fromList [4])
+          [ (1, bitsFor [3, 4, 5, 6]),
+            (2, bitsFor [4]),
+            (3, bitsFor [3, 4, 5]),
+            (4, bitsFor [4])
           ]
 
   describe "heightAfterBlocks" $ do
