@@ -1,12 +1,12 @@
 module Advent2022.Day17.Base
   ( parseLine,
     JetMove (..),
-    blocks,
+    rocks,
     jetPush,
     isOnSettled,
-    fallBlock,
-    fallBlocks,
-    heightAfterBlocks,
+    fallRock,
+    fallRocks,
+    heightAfterRocks,
   )
 where
 
@@ -35,20 +35,20 @@ parseLine = map parseChar
   So we have a coordinate system where the floor is at y = 0, the first rock
   starts falling with its leftmost point at x = 3 and bottommost point at y = 3.
 
-  A block can be represented as a list of its coordinates relative to the
+  A rock can be represented as a list of its coordinates relative to the
   origin, as if it were sitting at the left of the floor.
 
-  The fallen blocks can be represented as a container of coordinates of spaces
+  The fallen rocks can be represented as a container of coordinates of spaces
   containing rock.
 
-  Model a block falling by finding the maximum height 'h' of the current fallen
-  blocks, and then adding (2, h) to each block coordinate. Then repeat the
-  process of a jet push and a fall, and after each fall, check if the block now
+  Model a rock falling by finding the maximum height 'h' of the current fallen
+  rocks, and then adding (2, h) to each rock coordinate. Then repeat the
+  process of a jet push and a fall, and after each fall, check if the rock now
   needs to settle by checking if any of its points are now one above an
   occupied point. Once a fall finishes, add all the final points to the fallen
-  block container.
+  rock container.
 
-  The most interesting fallen blocks (occupied points) are the topmost ones: we
+  The most interesting fallen rocks (occupied points) are the topmost ones: we
   need the maximum height of /any/ occupied point to determine the starting
   point of the next and to find the final height. To check occupied points
   during falling, we need to check which points are occupied for a given y
@@ -64,18 +64,18 @@ parseLine = map parseChar
   (Update: now using bit vectors instead of sets, to save a little space.)
 
   Checking for settling only needs to be done for the bottommost points of a
-  block, which could be pre-computed, but that seems like more hassle than
+  rock, which could be pre-computed, but that seems like more hassle than
   it's worth for now.
 -}
 
-type Block = [Point]
+type Rock = [Point]
 
 type XSet = Word8
 
 type Settled = Map.Map Int XSet
 
-blocks :: [Block]
-blocks =
+rocks :: [Rock]
+rocks =
   [ [(1, 1), (2, 1), (3, 1), (4, 1)], -- horizontal bar
     [(2, 1), (1, 2), (2, 2), (3, 2), (2, 3)], -- plus shape
     [(1, 1), (2, 1), (3, 1), (3, 2), (3, 3)], -- backwards L shape
@@ -96,35 +96,35 @@ inXSet x s = testBit s (x - 1)
 isPointSettled :: Settled -> Point -> Bool
 isPointSettled s (x, y) = x `inXSet` Map.findWithDefault 0 y s
 
-isOnSettled :: Settled -> Block -> Bool
+isOnSettled :: Settled -> Rock -> Bool
 isOnSettled s = any $ isPointSettled s
 
-isOnFloor :: Block -> Bool
+isOnFloor :: Rock -> Bool
 isOnFloor = any ((== 0) . snd)
 
-isOnEdge :: Block -> Bool
+isOnEdge :: Rock -> Bool
 isOnEdge = any ((\x -> x < 1 || x > 7) . fst)
 
-jetPush :: Settled -> Block -> JetMove -> Block
-jetPush s b jm
-  | isOnEdge b' || isOnSettled s b' = b
-  | otherwise = b'
+jetPush :: Settled -> Rock -> JetMove -> Rock
+jetPush s r jm
+  | isOnEdge r' || isOnSettled s r' = r
+  | otherwise = r'
   where
-    b' = map (first $ (+) (jetMoveN jm)) b
+    r' = map (first $ (+) (jetMoveN jm)) r
 
--- Add a block's current position to the settled map.
-settle :: Settled -> Block -> Settled
+-- Add a rock's current position to the settled map.
+settle :: Settled -> Rock -> Settled
 settle = foldr insertPoint
   where
     insertPoint (x, y) = Map.insertWith (.|.) y (xSetEntry x)
 
-fallOne :: Block -> Block
+fallOne :: Rock -> Rock
 fallOne = map (second (subtract 1))
 
 maxY :: Settled -> Int
 maxY = fst . Map.findMax
 
-start :: Settled -> Block -> Block
+start :: Settled -> Rock -> Rock
 start s = map (bimap (+ 2) ((+ 3) . (+ topY)))
   where
     topY
@@ -132,27 +132,27 @@ start s = map (bimap (+ 2) ((+ 3) . (+ topY)))
       | otherwise = maxY s
 
 -- This needs to return the remaining JetMoves so that they can continue for
--- the next block after where they stopped for this one.
-fallBlock :: Settled -> Block -> [JetMove] -> ([JetMove], Settled)
-fallBlock origS origB = fall origS (start origS origB)
+-- the next rock after where they stopped for this one.
+fallRock :: Settled -> Rock -> [JetMove] -> ([JetMove], Settled)
+fallRock origS origB = fall origS (start origS origB)
   where
-    fall :: Settled -> Block -> [JetMove] -> ([JetMove], Settled)
+    fall :: Settled -> Rock -> [JetMove] -> ([JetMove], Settled)
     fall _ _ [] = error "Ran out of jet moves"
-    fall s b (jm : jms)
+    fall s r (jm : jms)
       | isOnFloor bPushedAndFallen || isOnSettled s bPushedAndFallen = (jms, settle s bPushed)
       | otherwise = fall s bPushedAndFallen jms
       where
-        bPushed = jetPush s b jm
+        bPushed = jetPush s r jm
         bPushedAndFallen = fallOne bPushed
 
-fallBlocks :: [Block] -> [JetMove] -> Settled
-fallBlocks = fall Map.empty
+fallRocks :: [Rock] -> [JetMove] -> Settled
+fallRocks = fall Map.empty
   where
-    fall :: Settled -> [Block] -> [JetMove] -> Settled
+    fall :: Settled -> [Rock] -> [JetMove] -> Settled
     fall s [] _ = s
-    fall s (b : bs) jetMoves = fall s' bs jetMoves'
+    fall s (r : rs) jetMoves = fall s' rs jetMoves'
       where
-        (jetMoves', s') = fallBlock s b jetMoves
+        (jetMoves', s') = fallRock s r jetMoves
 
-heightAfterBlocks :: Int -> [JetMove] -> Int
-heightAfterBlocks n jetMoves = maxY $ fallBlocks (take n $ cycle blocks) (cycle jetMoves)
+heightAfterRocks :: Int -> [JetMove] -> Int
+heightAfterRocks n jetMoves = maxY $ fallRocks (take n $ cycle rocks) (cycle jetMoves)

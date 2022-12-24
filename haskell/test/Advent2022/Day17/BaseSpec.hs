@@ -34,40 +34,40 @@ spec = do
       parseLine "<><" `shouldBe` [JetLeft, JetRight, JetLeft]
 
   describe "jetPush" $ do
-    it "pushes a block left" $ do
+    it "pushes a rock left" $ do
       jetPush Map.empty [(2, 2), (3, 2)] JetLeft `shouldBe` [(1, 2), (2, 2)]
 
-    it "pushes a block right" $ do
+    it "pushes a rock right" $ do
       jetPush Map.empty [(2, 2), (3, 2)] JetRight `shouldBe` [(3, 2), (4, 2)]
 
-    it "doesn't push a block left if it's already against the left wall" $ do
+    it "doesn't push a rock left if it's already against the left wall" $ do
       jetPush Map.empty [(1, 2), (2, 2)] JetLeft `shouldBe` [(1, 2), (2, 2)]
 
-    it "doesn't push a block right if it's already against the right wall" $ do
+    it "doesn't push a rock right if it's already against the right wall" $ do
       jetPush Map.empty [(6, 2), (7, 2)] JetRight `shouldBe` [(6, 2), (7, 2)]
 
   describe "isOnSettled" $ do
-    it "is true if any point in the block would be on a settled point" $ do
+    it "is true if any point in the rock would be on a settled point" $ do
       isOnSettled settled [(3, 2), (3, 3)] `shouldBe` True
 
-    it "is false if no point in the block would be on a settled point" $ do
+    it "is false if no point in the rock would be on a settled point" $ do
       isOnSettled settled [(6, 3), (6, 4)] `shouldBe` False
 
-  describe "fallBlock" $ do
-    it "Falls and pushes a block until settled on the floor, leaving remaining jet moves" $ do
-      fallBlock Map.empty (head blocks) jetMoves
+  describe "fallRock" $ do
+    it "Falls and pushes a rock until settled on the floor, leaving remaining jet moves" $ do
+      fallRock Map.empty (head rocks) jetMoves
         `shouldBe` ( [JetLeft, JetRight, JetLeft, JetRight, JetLeft],
                      Map.fromList
                        [ (1, bitsFor [3, 4, 5, 6])
                        ]
                    )
 
-    it "Falls and pushes a block until settled on top of another, leaving remaining jet moves" $ do
+    it "Falls and pushes a rock until settled on top of another, leaving remaining jet moves" $ do
       let settled =
             Map.fromList
               [ (1, bitsFor [3, 4, 5, 6])
               ]
-      fallBlock settled (blocks !! 1) (drop 4 jetMoves)
+      fallRock settled (rocks !! 1) (drop 4 jetMoves)
         `shouldBe` ( [JetLeft],
                      Map.fromList
                        [ (1, bitsFor [3, 4, 5, 6]),
@@ -77,9 +77,9 @@ spec = do
                        ]
                    )
 
-  describe "fallBlocks" $ do
-    it "Falls and pushes several blocks" $ do
-      fallBlocks (take 2 blocks) jetMoves
+  describe "fallRocks" $ do
+    it "Falls and pushes several rocks" $ do
+      fallRocks (take 2 rocks) jetMoves
         `shouldBe` Map.fromList
           [ (1, bitsFor [3, 4, 5, 6]),
             (2, bitsFor [4]),
@@ -87,8 +87,8 @@ spec = do
             (4, bitsFor [4])
           ]
 
-  describe "heightAfterBlocks" $ do
+  describe "heightAfterRocks" $ do
     -- TOOD fix; this is way off
-    it "Runs for 2022 blocks and produces the correct max height" $ do
+    it "Runs for 2022 rocks and produces the correct max height" $ do
       let jms = parseLine ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>"
-      heightAfterBlocks 2022 jms `shouldBe` 3068
+      heightAfterRocks 2022 jms `shouldBe` 3068
