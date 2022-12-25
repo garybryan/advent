@@ -1,6 +1,7 @@
 module Lib.Parsing
   ( intParser,
     pointParser,
+    pointParser3d,
     parseOrError,
   )
 where
@@ -13,8 +14,14 @@ intParser = read <$> (((:) <$> char '-' <*> digits) <|> digits)
   where
     digits = many1 digit
 
+intAndCommaParser :: Parser Int
+intAndCommaParser = intParser <* char ','
+
 pointParser :: Parser (Int, Int)
-pointParser = (,) <$> (intParser <* char ',') <*> intParser
+pointParser = (,) <$> intAndCommaParser <*> intParser
+
+pointParser3d :: Parser (Int, Int, Int)
+pointParser3d = (,,) <$> intAndCommaParser <*> intAndCommaParser <*> intParser
 
 parseOrError :: Parser a -> String -> a
 parseOrError p s = case parse p "" s of
