@@ -7,4 +7,4 @@ spec :: Spec
 spec = do
   describe "doThing" $ do
     it "does a thing" $ do
-      doThing `shouldBe` "Did a thing."
+      5 `shouldBe` 5
