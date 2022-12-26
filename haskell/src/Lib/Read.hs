@@ -1,6 +1,4 @@
 module Lib.Read (readLines) where
 
 readLines :: FilePath -> IO [String]
-readLines path = do
-  contents <- readFile path
-  return $ lines contents
+readLines path = lines <$> readFile path
