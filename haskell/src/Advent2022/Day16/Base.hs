@@ -7,18 +7,17 @@ module Advent2022.Day16.Base
     maxPressure,
     isReachable,
     potentialPressure,
-    valveMap,
   )
 where
 
-import qualified Data.IntSet as IntSet
+import Data.Bits (setBit, testBit)
 import Data.List (maximumBy)
 import qualified Data.Map as Map
 import qualified Data.Matrix as M
 import Data.Maybe (catMaybes, fromJust, fromMaybe, mapMaybe)
 import Data.Ord (comparing)
-import qualified Data.Set as Set
 import qualified Data.Vector as V
+import Data.Word (Word64)
 import Lib.Parsing (intParser, parseOrError)
 import Text.Parsec
 import Text.Parsec.String
@@ -90,6 +89,9 @@ data Valve = Valve Int AdjList deriving (Eq, Show)
 
 type ValveMap = Map.Map ValveIndex Valve
 
+-- The supplied data has 57 valves, so 64 bits just about covers us.
+type BitVector = Word64
+
 valveNameParser :: Parser ValveName
 valveNameParser = many letter
 
@@ -134,18 +136,18 @@ valveMapAndStartIndexFromLines = valveMapAndStartIndex . map parseLine
 
 data TableCell
   = Unreachable
-  | Cell Int Int IntSet.IntSet
+  | Cell Int Int BitVector
   deriving (Eq, Ord)
 
 instance Show TableCell where
   -- More compact output than the derived Show, handy for debugging.
-  show (Cell p r s) = show (p, r, IntSet.toList s)
+  show (Cell p r s) = show (p, r, s)
   show _ = "Unreachable"
 
 type DPTable = M.Matrix TableCell
 
 emptyCell :: TableCell
-emptyCell = Cell 0 0 IntSet.empty
+emptyCell = Cell 0 0 0
 
 isReachable :: TableCell -> Bool
 isReachable Unreachable = False
@@ -162,11 +164,11 @@ amendIfReachable f (Cell p r s) = Just $ Cell p' r' s
 amendIfReachable _ _ = Nothing
 
 alreadyOpen :: ValveIndex -> TableCell -> Bool
-alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
+alreadyOpen valveI (Cell _ _ ovs) = testBit ovs (valveI - 1)
 alreadyOpen _ _ = False
 
 openValve :: ValveIndex -> TableCell -> TableCell
-openValve valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
+openValve valveI (Cell p r ovs) = Cell p r $ setBit ovs (valveI - 1)
 openValve _ c = c
 
 nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
@@ -225,18 +227,3 @@ maxPressure limit vm startValveIndex = maximum $ mapMaybe pressure (V.toList fin
     finalRow = M.getRow (limit + 1) table
     pressure (Cell p _ _) = Just p
     pressure _ = Nothing
-
-valveMap :: ValveMap
-valveMap =
-  Map.fromList
-    [ (1, Valve 0 [4, 9, 2]),
-      (2, Valve 13 [3, 1]),
-      (3, Valve 2 [4, 2]),
-      (4, Valve 20 [3, 1, 5]),
-      (5, Valve 3 [6, 4]),
-      (6, Valve 0 [5, 7]),
-      (7, Valve 0 [6, 8]),
-      (8, Valve 22 [7]),
-      (9, Valve 0 [1, 10]),
-      (10, Valve 21 [9])
-    ]
