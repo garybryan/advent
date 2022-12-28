@@ -1,119 +1,153 @@
 module Advent2022.Day16.Part2
-  (
+  ( doThing,
+    -- run,
+    makeTable,
   )
 where
 
--- run,
--- makeTable,
-
-import Advent2022.Day16.Base
-import Data.Bifunctor (bimap)
+import Advent2022.Day16.Base hiding (makeTable)
 import qualified Data.IntSet as IntSet
 import Data.List (maximumBy)
 import qualified Data.Map as Map
 import qualified Data.Matrix as M
 import Data.Maybe (catMaybes, fromJust, fromMaybe, isNothing, mapMaybe)
 import Data.Ord (comparing)
-import qualified Data.Set as Set
 import qualified Data.Vector as V
 
 {-
-  Get all unique pairs of valves.
-  Then get all pairs of states where the patterns match.
-  Then add their potential pressures and find the max.
+  Dynamic programming solution again, adapted for 2 actors on the map.
 
+  There needs to be a row for each actor for each minute. This could be
+  represented either as a table with double the rows, or as two tables. These
+  options are equivalent, but with pros and cons for mental reasoning. I've
+  gone for a single table: it breaks the "one row per minute" idea, but it
+  avoids needing different logic for each actor to find the other's latest
+  move.
+
+  Choices depend on the previous actor's optimal move (to get the latest
+  pressure and adjacency) and the previous minute (for adjacency; since both
+  actors start at the same place, either can be used, but for simplicity use
+  the current one: go back 2 rows for the previous minute, 4 for the one before
+  that.
+
+  This does mean that the previous player's optimal move (an O(V) calculation)
+  needs to be found for each turn, but that doesn't increase the overall
+  complexity as it only needs to be done once per row.
+
+  - Non-opening choices (move from adjacent valve):
+    - Pressure, rate, valves come from the other actor's previous best move
+    - Adjacency check comes from last minute
+
+  - Opening choices (moved from adjacent valve a minute ago and open):
+    - Open current: pressure, rate, and valves (to check if can open) from
+      other actor's best previous move.
+    - Open from adjacent: pressure and rate from other actor latest (to account
+      for their move); adjacency check from 2 minutes ago.
+
+    Pressure only increases on the first player's turn!
+
+    Is taking the previous player's best move always optimal? Or, like in part 1,
+    is that an incorrect greedy strategy?
 -}
 
--- Pairs of open valves and potential pressures.
--- They're going into a tree set, so put the Int first for quicker sorting.
--- Sorting by potential pressure might come in useful too.
-type CellState = (Int, IntSet.IntSet)
+doThing :: String
+doThing = "Did a thing, part 2."
 
-data Cell = Cell Int Int IntSet.IntSet
+minuteForRow :: Int -> Int
+minuteForRow row = (row + 1) `div` 2
 
-instance Show Cell where
-  -- More compact output than the derived Show, handy for debugging.
-  show (Cell p r s) = show (p, r, IntSet.toList s)
+-- 1 for the player's turn (odd), 0 for the elephant's turn (even)
+-- Used as a multiplier so pressure only increases on the player's turn.
+-- TODO will this allow for reuse: make generic for number of actors?
+turnForRow :: Int -> Int
+turnForRow row = row `mod` 2
 
-type DPTable = M.Matrix [Cell]
-
-type States = Set.Set CellState
-
--- cellState :: Int -> TableCell -> CellState
--- cellState remainingMins c@(Cell _ _ s) = (potentialPressure remainingMins c, s)
--- cellState _ _ = error "Can only get cell state from a reachable cell."
-
-emptyCell :: Cell
-emptyCell = Cell 0 0 IntSet.empty
-
-amendIfReachable :: ((Int, Int) -> (Int, Int)) -> [Cell] -> [Cell]
-amendIfReachable f = map cellF
-  where
-    cellF cell = let (Cell p r s) = cell; (p', r') = f (p, r) in Cell p' r' s
-
-nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [Cell]
-nonOpenChoices table minute valveI vm
-  | minute == 1 && not (null $ table M.! (minute, valveI)) = [emptyCell]
+nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
+nonOpenChoices table row valveI vm
+  | minute == 1 && isReachable (table M.! (row, valveI)) = [emptyCell]
   | minute == 1 = []
-  | otherwise = concatMap prevWithCurPressure adj
+  | otherwise = mapMaybe prevWithCurPressure (valveI : adj)
   where
     Valve _ adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) $ table M.! (minute - 1, vi)
+    minute = minuteForRow row
+    turn = turnForRow row
+    prevWithCurPressure vi
+      -- \| minute > 1 && isReachable (table M.! (row - 2, vi)) =
+      --     amendIfReachable (\(p, r) -> (p + r * turn, r)) $ table M.! (minute - 1, vi)
+      | minute > 1 = amendIfReachable (\(p, r) -> (p + r, r)) $ table M.! (row - 2, vi)
+      | otherwise = Nothing
 
-alreadyOpen :: ValveIndex -> Cell -> Bool
-alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
+openInPrevRow :: DPTable -> Int -> ValveIndex -> Bool
+openInPrevRow table row valveI = alreadyOpen valveI (table M.! (row - 1, valveI))
 
-openValve :: ValveIndex -> Cell -> Cell
-openValve valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
-
-openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [Cell]
-openChoices table minute valveI vm
+openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
+openChoices table row valveI vm
   | rate == 0 = []
   | otherwise = map (openValve valveI) choices
   where
     Valve rate adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) $ table M.! (minute - 2, vi)
-    openCurValve
-      | minute == 1 = []
-      | otherwise = amendIfReachable (\(p, r) -> (p + r, r + rate)) $ table M.! (minute - 1, valveI)
+    minute = minuteForRow row
+    turn = turnForRow row
+    -- TODO update doc about row - 3 rather than 4 to get latest pressure!
+    -- prevWithCurPressure vi
+    --   | isReachable (table M.! (row - 4, vi)) = amendIfReachable (\(p, r) -> (p + r * turn, r + rate)) $ table M.! (row - 3, vi)
+    --   | otherwise = Nothing
+    -- openCurValve
+    --   | isReachable (table M.! (row - 2, valveI)) = amendIfReachable (\(p, r) -> (p + r * turn, r + rate)) $ table M.! (row - 1, valveI)
+    --   | otherwise = Nothing
+    openedByOther vi = alreadyOpen valveI $ table M.! (row - 1, vi)
+    prevWithCurPressure vi
+      | openedByOther valveI = Nothing
+      | otherwise = amendIfReachable (\(p, r) -> (p + r, r + rate)) $ table M.! (row - 4, vi)
+    openCurValve -- TODO order
+      | not (openedByOther valveI) = amendIfReachable (\(p, r) -> (p + r, r + rate)) $ table M.! (row - 2, valveI)
+      | otherwise = Nothing
     adjChoices
       | minute <= 2 = []
-      | otherwise = concatMap prevWithCurPressure adj
-    choices = filter (not . alreadyOpen valveI) $ openCurValve ++ adjChoices
+      | otherwise = map prevWithCurPressure adj
+    choices = filter (not . alreadyOpen valveI) $ catMaybes $ [openCurValve | minute > 1] ++ adjChoices
 
 dp :: Int -> Int -> ValveMap -> DPTable -> Int -> Int -> DPTable
-dp limit maxValveI vm table minute valveI
-  | minute > limit + 1 = table
-  | valveI > maxValveI = recurse table (minute + 1) 1
-  | otherwise = recurse table' minute (valveI + 1)
+dp limit maxValveI vm table row valveI
+  | minute > limit + 1 = table -- Finished bottom row.
+  | valveI > maxValveI = recurse table (row + 1) 1 -- Finished a row; move onto next.
+  | otherwise = recurse table' row (valveI + 1)
   where
+    minute = minuteForRow row
     recurse = dp limit maxValveI vm
-    nocs = nonOpenChoices table minute valveI vm
-    ocs = openChoices table minute valveI vm
+    maxByPotentialPressure = maximumBy $ comparing (potentialPressure (limit - minute))
+    -- TODO only calculate prevBest once
+    -- prevBest
+    --   | row > 1 = maxByPotentialPressure $ V.toList $ M.getRow (row - 1) table
+    --   | otherwise = emptyCell
+    nocs = nonOpenChoices table row valveI vm
+    ocs = openChoices table row valveI vm
     choices = nocs ++ ocs
     table'
+      -- \| minute == limit + 1 = M.setElem prevBest (row, valveI) table
       | null choices = table
-      | otherwise = M.setElem choices (minute, valveI) table
-
--- states' = foldr (Set.insert . cellState remainingMins) states choices
-
--- This could probably be more efficient using union find, but I've not studied
--- union find yet.
-disjointCells :: States -> Set.Set (CellState, CellState)
-disjointCells states = usefulStatePairs
-  where
-    valveSets = Set.map snd states
-    valveSetPairs = Set.cartesianProduct valveSets valveSets
-    disjointValveSetPairs = Set.filter (uncurry IntSet.disjoint) valveSetPairs
-    statePairs = Set.cartesianProduct states states
-    usefulStatePairs = Set.filter (\(a, b) -> (snd a, snd b) `Set.member` disjointValveSetPairs) statePairs
-    pairs = Set.map (bimap fst fst) usefulStatePairs
+      | otherwise = M.setElem (maxByPotentialPressure choices) (row, valveI) table
 
 makeTable :: Int -> ValveMap -> Int -> DPTable
-makeTable limit vm startIndex = dp limit nValves vm initialTable 1 1
+makeTable limit vm startValveIndex = dp limit nValves vm table 1 1
   where
-    firstReachableOnly pos
-      | pos == (1, startIndex) = [emptyCell]
-      | otherwise = []
-    initialTable = M.matrix (limit + 1) nValves firstReachableOnly
+    table = M.matrix ((limit + 1) * 2) nValves firstReachableOnly
+    firstReachableOnly (row, col)
+      | row <= 2 && col == startValveIndex = emptyCell
+      | otherwise = Unreachable
     nValves = Map.size vm
+
+valveMap :: ValveMap
+valveMap =
+  Map.fromList
+    [ (1, Valve 0 [4, 9, 2]),
+      (2, Valve 13 [3, 1]),
+      (3, Valve 2 [4, 2]),
+      (4, Valve 20 [3, 1, 5]),
+      (5, Valve 3 [6, 4]),
+      (6, Valve 0 [5, 7]),
+      (7, Valve 0 [6, 8]),
+      (8, Valve 22 [7]),
+      (9, Valve 0 [1, 10]),
+      (10, Valve 21 [9])
+    ]

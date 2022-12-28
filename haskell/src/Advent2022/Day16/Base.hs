@@ -2,7 +2,14 @@ module Advent2022.Day16.Base
   ( Valve (..),
     ValveMap,
     ValveIndex,
+    BitVector,
+    DPTable,
+    TableCell (..),
     parseLine,
+    emptyCell,
+    amendIfReachable,
+    openValve,
+    alreadyOpen,
     valveMapAndStartIndexFromLines,
     maxPressure,
     isReachable,
@@ -11,6 +18,7 @@ module Advent2022.Day16.Base
 where
 
 import Data.Bits (setBit, testBit)
+import Data.Char (intToDigit)
 import Data.List (maximumBy)
 import qualified Data.Map as Map
 import qualified Data.Matrix as M
@@ -19,6 +27,7 @@ import Data.Ord (comparing)
 import qualified Data.Vector as V
 import Data.Word (Word64)
 import Lib.Parsing (intParser, parseOrError)
+import Numeric (showIntAtBase)
 import Text.Parsec
 import Text.Parsec.String
 
@@ -141,7 +150,10 @@ data TableCell
 
 instance Show TableCell where
   -- More compact output than the derived Show, handy for debugging.
-  show (Cell p r s) = show (p, r, s)
+  -- Now with added bit vector as binary.
+  show (Cell p r s) = show (p, r, binS)
+    where
+      binS = showIntAtBase 2 intToDigit s ""
   show _ = "Unreachable"
 
 type DPTable = M.Matrix TableCell
@@ -227,3 +239,18 @@ maxPressure limit vm startValveIndex = maximum $ mapMaybe pressure (V.toList fin
     finalRow = M.getRow (limit + 1) table
     pressure (Cell p _ _) = Just p
     pressure _ = Nothing
+
+valveMap :: ValveMap
+valveMap =
+  Map.fromList
+    [ (1, Valve 0 [4, 9, 2]),
+      (2, Valve 13 [3, 1]),
+      (3, Valve 2 [4, 2]),
+      (4, Valve 20 [3, 1, 5]),
+      (5, Valve 3 [6, 4]),
+      (6, Valve 0 [5, 7]),
+      (7, Valve 0 [6, 8]),
+      (8, Valve 22 [7]),
+      (9, Valve 0 [1, 10]),
+      (10, Valve 21 [9])
+    ]
