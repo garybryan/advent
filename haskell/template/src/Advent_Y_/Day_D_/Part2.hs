@@ -10,4 +10,4 @@ doThing :: String
 doThing = "Did a thing, part 2."
 
 run :: [String] -> String
-run ls = "Result: " ++ show (doThing)
+run ss = "Result: " ++ show (doThing)
