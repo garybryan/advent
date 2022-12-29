@@ -82,6 +82,9 @@ library
       Advent2022.Day18.Base
       Advent2022.Day18.Part1
       Advent2022.Day18.Part2
+      Advent2022.Day19.Base
+      Advent2022.Day19.Part1
+      Advent2022.Day19.Part2
       Lib.Matrix
       Lib.Parsing
       Lib.Read
@@ -179,6 +182,9 @@ test-suite advent-test
       Advent2022.Day18.BaseSpec
       Advent2022.Day18.Part1Spec
       Advent2022.Day18.Part2Spec
+      Advent2022.Day19.BaseSpec
+      Advent2022.Day19.Part1Spec
+      Advent2022.Day19.Part2Spec
       Paths_advent
   hs-source-dirs:
       test

@@ -34,6 +34,7 @@ import qualified Advent2022.Day14.Part2
 import qualified Advent2022.Day15.Part1
 import qualified Advent2022.Day15.Part2
 import qualified Advent2022.Day16.Part1
+import qualified Advent2022.Day16.Part2
 import qualified Advent2022.Day17.Part1
 -- import qualified Advent2022.Day17.Part2
 import qualified Advent2022.Day18.Part1
@@ -132,6 +133,8 @@ main = do
 
   putStrLn "\n2022 day 16 part 1:"
   runOnFile Advent2022.Day16.Part1.run "data/2022/16.txt"
+  putStrLn "\n2022 day 16 part 2:"
+  runOnFile Advent2022.Day16.Part2.run "data/2022/16.txt"
 
   putStrLn "\n2022 day 17 part 1:"
   runOnFile Advent2022.Day17.Part1.run "data/2022/17.txt"

@@ -1,153 +1,63 @@
 module Advent2022.Day16.Part2
-  ( doThing,
-    -- run,
-    makeTable,
+  ( partitions,
+    pairTotal,
+    pairsMax,
+    run,
   )
 where
 
-import Advent2022.Day16.Base hiding (makeTable)
+import Advent2022.Day16.Base
+import Data.Bits
 import qualified Data.IntSet as IntSet
-import Data.List (maximumBy)
 import qualified Data.Map as Map
-import qualified Data.Matrix as M
-import Data.Maybe (catMaybes, fromJust, fromMaybe, isNothing, mapMaybe)
-import Data.Ord (comparing)
-import qualified Data.Vector as V
 
 {-
-  Dynamic programming solution again, adapted for 2 actors on the map.
+  I spent far too long trying to somehow adapt the Part 1 DP solution to work
+  for part 2, either by running two searches at once with disjoint valves or by
+  keeping track of states, but I was just getting nowhere so did a bit of a
+  bodge instead...
 
-  There needs to be a row for each actor for each minute. This could be
-  represented either as a table with double the rows, or as two tables. These
-  options are equivalent, but with pros and cons for mental reasoning. I've
-  gone for a single table: it breaks the "one row per minute" idea, but it
-  avoids needing different logic for each actor to find the other's latest
-  move.
+  The idea is to find the two paths with disjoint sets of opened valves that
+  give the highest combined pressure, since the player and the elephant will
+  always open different valves.
 
-  Choices depend on the previous actor's optimal move (to get the latest
-  pressure and adjacency) and the previous minute (for adjacency; since both
-  actors start at the same place, either can be used, but for simplicity use
-  the current one: go back 2 rows for the previous minute, 4 for the one before
-  that.
+  So part 1 is amended to take a set of valves that can be opened, and is then
+  run for each pair of disjoint subsets of valves.
 
-  This does mean that the previous player's optimal move (an O(V) calculation)
-  needs to be found for each turn, but that doesn't increase the overall
-  complexity as it only needs to be done once per row.
+  Finding possible disjoint subsets is just a case of finding all partitions
+  of the set into two sets. I've done this with some binary trickery:
+  Generate all numbers from 1 to 2^(n - 1) - 1, which gives all combinations of
+  bit 1 to n - 1 being 0 or 1; we don't care about bit zero or n because we
+  want each actor to open at least one valve. The list is then partitioned
+  based on the i-th bit being set for each of these numbers.
 
-  - Non-opening choices (move from adjacent valve):
-    - Pressure, rate, valves come from the other actor's previous best move
-    - Adjacency check comes from last minute
-
-  - Opening choices (moved from adjacent valve a minute ago and open):
-    - Open current: pressure, rate, and valves (to check if can open) from
-      other actor's best previous move.
-    - Open from adjacent: pressure and rate from other actor latest (to account
-      for their move); adjacency check from 2 minutes ago.
-
-    Pressure only increases on the first player's turn!
-
-    Is taking the previous player's best move always optimal? Or, like in part 1,
-    is that an incorrect greedy strategy?
+  Time complexity O(2^V * V^2 * M) for V valves in M minutes, which is frankly
+  embarrassing. Took 16 minutes on my computer (and the answer was still
+  wrong...). Space complexity should be O(2^V + V^2 * M) since only one table
+  needs to be held in memory at once and it only needs to compare the maxes.
 -}
 
-doThing :: String
-doThing = "Did a thing, part 2."
-
-minuteForRow :: Int -> Int
-minuteForRow row = (row + 1) `div` 2
-
--- 1 for the player's turn (odd), 0 for the elephant's turn (even)
--- Used as a multiplier so pressure only increases on the player's turn.
--- TODO will this allow for reuse: make generic for number of actors?
-turnForRow :: Int -> Int
-turnForRow row = row `mod` 2
-
-nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-nonOpenChoices table row valveI vm
-  | minute == 1 && isReachable (table M.! (row, valveI)) = [emptyCell]
-  | minute == 1 = []
-  | otherwise = mapMaybe prevWithCurPressure (valveI : adj)
+-- TODO just use bit vectors directly instead of messing about with sets?
+partitions :: ValveSet -> [(ValveSet, ValveSet)]
+partitions nums = map part ([1 .. 1 `shiftL` (len - 1) - 1] :: [Int])
   where
-    Valve _ adj = fromJust $ Map.lookup valveI vm
-    minute = minuteForRow row
-    turn = turnForRow row
-    prevWithCurPressure vi
-      -- \| minute > 1 && isReachable (table M.! (row - 2, vi)) =
-      --     amendIfReachable (\(p, r) -> (p + r * turn, r)) $ table M.! (minute - 1, vi)
-      | minute > 1 = amendIfReachable (\(p, r) -> (p + r, r)) $ table M.! (row - 2, vi)
-      | otherwise = Nothing
+    len = IntSet.size nums
+    indices = Map.fromList $ zip (IntSet.toList nums) [0 ..]
+    part i = IntSet.partition (testBit i . (indices Map.!)) nums
 
-openInPrevRow :: DPTable -> Int -> ValveIndex -> Bool
-openInPrevRow table row valveI = alreadyOpen valveI (table M.! (row - 1, valveI))
-
-openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-openChoices table row valveI vm
-  | rate == 0 = []
-  | otherwise = map (openValve valveI) choices
+pairTotal :: Int -> ValveMap -> Int -> (ValveSet, ValveSet) -> Int
+pairTotal limit vm start (v1, v2) = mp v1 + mp v2
   where
-    Valve rate adj = fromJust $ Map.lookup valveI vm
-    minute = minuteForRow row
-    turn = turnForRow row
-    -- TODO update doc about row - 3 rather than 4 to get latest pressure!
-    -- prevWithCurPressure vi
-    --   | isReachable (table M.! (row - 4, vi)) = amendIfReachable (\(p, r) -> (p + r * turn, r + rate)) $ table M.! (row - 3, vi)
-    --   | otherwise = Nothing
-    -- openCurValve
-    --   | isReachable (table M.! (row - 2, valveI)) = amendIfReachable (\(p, r) -> (p + r * turn, r + rate)) $ table M.! (row - 1, valveI)
-    --   | otherwise = Nothing
-    openedByOther vi = alreadyOpen valveI $ table M.! (row - 1, vi)
-    prevWithCurPressure vi
-      | openedByOther valveI = Nothing
-      | otherwise = amendIfReachable (\(p, r) -> (p + r, r + rate)) $ table M.! (row - 4, vi)
-    openCurValve -- TODO order
-      | not (openedByOther valveI) = amendIfReachable (\(p, r) -> (p + r, r + rate)) $ table M.! (row - 2, valveI)
-      | otherwise = Nothing
-    adjChoices
-      | minute <= 2 = []
-      | otherwise = map prevWithCurPressure adj
-    choices = filter (not . alreadyOpen valveI) $ catMaybes $ [openCurValve | minute > 1] ++ adjChoices
+    mp vs = maxPressure limit vm vs start
 
-dp :: Int -> Int -> ValveMap -> DPTable -> Int -> Int -> DPTable
-dp limit maxValveI vm table row valveI
-  | minute > limit + 1 = table -- Finished bottom row.
-  | valveI > maxValveI = recurse table (row + 1) 1 -- Finished a row; move onto next.
-  | otherwise = recurse table' row (valveI + 1)
+pairsMax :: Int -> ValveMap -> Int -> Int
+pairsMax limit vm start = maximum pairTotals
   where
-    minute = minuteForRow row
-    recurse = dp limit maxValveI vm
-    maxByPotentialPressure = maximumBy $ comparing (potentialPressure (limit - minute))
-    -- TODO only calculate prevBest once
-    -- prevBest
-    --   | row > 1 = maxByPotentialPressure $ V.toList $ M.getRow (row - 1) table
-    --   | otherwise = emptyCell
-    nocs = nonOpenChoices table row valveI vm
-    ocs = openChoices table row valveI vm
-    choices = nocs ++ ocs
-    table'
-      -- \| minute == limit + 1 = M.setElem prevBest (row, valveI) table
-      | null choices = table
-      | otherwise = M.setElem (maxByPotentialPressure choices) (row, valveI) table
+    valves = nonZeroValves vm
+    pairTotals = map (pairTotal limit vm start) (partitions valves)
 
-makeTable :: Int -> ValveMap -> Int -> DPTable
-makeTable limit vm startValveIndex = dp limit nValves vm table 1 1
-  where
-    table = M.matrix ((limit + 1) * 2) nValves firstReachableOnly
-    firstReachableOnly (row, col)
-      | row <= 2 && col == startValveIndex = emptyCell
-      | otherwise = Unreachable
-    nValves = Map.size vm
+pairsMaxFromLines :: [String] -> Int
+pairsMaxFromLines = uncurry (pairsMax 26) . valveMapAndStartIndexFromLines
 
-valveMap :: ValveMap
-valveMap =
-  Map.fromList
-    [ (1, Valve 0 [4, 9, 2]),
-      (2, Valve 13 [3, 1]),
-      (3, Valve 2 [4, 2]),
-      (4, Valve 20 [3, 1, 5]),
-      (5, Valve 3 [6, 4]),
-      (6, Valve 0 [5, 7]),
-      (7, Valve 0 [6, 8]),
-      (8, Valve 22 [7]),
-      (9, Valve 0 [1, 10]),
-      (10, Valve 21 [9])
-    ]
+run :: [String] -> String
+run ss = "Max pressure from player and elephant opening valves: " ++ show (pairsMaxFromLines ss)

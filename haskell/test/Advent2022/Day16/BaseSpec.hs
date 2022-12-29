@@ -1,6 +1,7 @@
-module Advent2022.Day16.BaseSpec (spec) where
+module Advent2022.Day16.BaseSpec (spec, valveMap) where
 
 import Advent2022.Day16.Base
+import qualified Data.IntSet as IntSet
 import qualified Data.Map as Map
 import Test.Hspec
 
@@ -47,4 +48,8 @@ spec = do
 
   describe "maxPressure" $ do
     it "finds the maximum possible pressure" $ do
-      maxPressure 30 valveMap 1 `shouldBe` 1651
+      maxPressure 30 valveMap (nonZeroValves valveMap) 1 `shouldBe` 1651
+
+  describe "nonZeroValves" $ do
+    it "gives the indices of all non-zero-rate valves" $ do
+      nonZeroValves valveMap `shouldBe` IntSet.fromList [2, 3, 4, 5, 8, 10]

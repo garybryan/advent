@@ -5,6 +5,7 @@ module Advent2022.Day16.Base
     BitVector,
     DPTable,
     TableCell (..),
+    ValveSet,
     parseLine,
     emptyCell,
     amendIfReachable,
@@ -14,11 +15,13 @@ module Advent2022.Day16.Base
     maxPressure,
     isReachable,
     potentialPressure,
+    nonZeroValves,
   )
 where
 
 import Data.Bits (setBit, testBit)
 import Data.Char (intToDigit)
+import qualified Data.IntSet as IntSet
 import Data.List (maximumBy)
 import qualified Data.Map as Map
 import qualified Data.Matrix as M
@@ -84,6 +87,10 @@ import Text.Parsec.String
   multiplied by the number of remaining minutes. Choosing just by pressure
   isn't enough, because a high rate means that pressure will grow more quickly
   over time.
+
+  Time and space complexity O(V^2*M) for V valves in M minutes, as filling in
+  one table cell for an openable valve requires checking cells for connected
+  valves.
 -}
 
 type ValveName = String
@@ -97,6 +104,8 @@ type NamedValve = (ValveName, (Int, [ValveName]))
 data Valve = Valve Int AdjList deriving (Eq, Show)
 
 type ValveMap = Map.Map ValveIndex Valve
+
+type ValveSet = IntSet.IntSet
 
 -- The supplied data has 57 valves, so 64 bits just about covers us.
 type BitVector = Word64
@@ -193,9 +202,7 @@ nonOpenChoices table minute valveI vm
     prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) $ table M.! (minute - 1, vi)
 
 openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-openChoices table minute valveI vm
-  | rate == 0 = []
-  | otherwise = map (openValve valveI) choices
+openChoices table minute valveI vm = map (openValve valveI) choices
   where
     Valve rate adj = fromJust $ Map.lookup valveI vm
     prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) $ table M.! (minute - 2, vi)
@@ -207,24 +214,26 @@ openChoices table minute valveI vm
 
 -- This could be optimised to use O(V) space rather than O(V*M), since values
 -- are only derived from the previous two rows, but that's an exercise for later.
-dp :: Int -> Int -> ValveMap -> DPTable -> Int -> Int -> DPTable
-dp limit maxValveI vm table minute valveI
+dp :: Int -> Int -> ValveMap -> ValveSet -> DPTable -> Int -> Int -> DPTable
+dp limit maxValveI vm openable table minute valveI
   | minute > limit + 1 = table -- Finished bottom row.
   | valveI > maxValveI = recurse table (minute + 1) 1 -- Finished a row; move onto next.
   | otherwise = recurse table' minute (valveI + 1)
   where
     remainingMins = limit - minute
-    recurse = dp limit maxValveI vm
+    recurse = dp limit maxValveI vm openable
     maxByPotentialPressure = maximumBy $ comparing (potentialPressure remainingMins)
     nocs = nonOpenChoices table minute valveI vm
-    ocs = openChoices table minute valveI vm
+    ocs
+      | valveI `IntSet.member` openable = openChoices table minute valveI vm
+      | otherwise = []
     choices = nocs ++ ocs
     table'
       | null choices = table
       | otherwise = M.setElem (maxByPotentialPressure choices) (minute, valveI) table
 
-makeTable :: Int -> ValveMap -> Int -> DPTable
-makeTable limit vm startIndex = dp limit nValves vm initialTable 1 1
+makeTable :: Int -> ValveMap -> ValveSet -> Int -> DPTable
+makeTable limit vm openable startIndex = dp limit nValves vm openable initialTable 1 1
   where
     firstReachableOnly pos
       | pos == (1, startIndex) = emptyCell
@@ -232,25 +241,15 @@ makeTable limit vm startIndex = dp limit nValves vm initialTable 1 1
     initialTable = M.matrix (limit + 1) nValves firstReachableOnly
     nValves = Map.size vm
 
-maxPressure :: Int -> ValveMap -> Int -> Int
-maxPressure limit vm startValveIndex = maximum $ mapMaybe pressure (V.toList finalRow)
+maxPressure :: Int -> ValveMap -> ValveSet -> Int -> Int
+maxPressure limit vm openable startValveIndex = maximum $ mapMaybe pressure (V.toList finalRow)
   where
-    table = makeTable limit vm startValveIndex
+    table = makeTable limit vm openable startValveIndex
     finalRow = M.getRow (limit + 1) table
     pressure (Cell p _ _) = Just p
     pressure _ = Nothing
 
-valveMap :: ValveMap
-valveMap =
-  Map.fromList
-    [ (1, Valve 0 [4, 9, 2]),
-      (2, Valve 13 [3, 1]),
-      (3, Valve 2 [4, 2]),
-      (4, Valve 20 [3, 1, 5]),
-      (5, Valve 3 [6, 4]),
-      (6, Valve 0 [5, 7]),
-      (7, Valve 0 [6, 8]),
-      (8, Valve 22 [7]),
-      (9, Valve 0 [1, 10]),
-      (10, Valve 21 [9])
-    ]
+nonZeroValves :: ValveMap -> ValveSet
+nonZeroValves = IntSet.fromList . Map.keys . Map.filter nonZero
+  where
+    nonZero (Valve i _) = i /= 0
