@@ -82,6 +82,10 @@ library
       Advent2022.Day18.Base
       Advent2022.Day18.Part1
       Advent2022.Day18.Part2
+      Advent2022.Day19.Base
+      Advent2022.Day19.Parsing
+      Advent2022.Day19.Part1
+      Advent2022.Day19.Part2
       Lib.Matrix
       Lib.Parsing
       Lib.Read
@@ -101,6 +105,7 @@ library
     , hspec
     , matrix
     , parsec
+    , pqueue
     , split
     , time
     , vector
@@ -122,6 +127,7 @@ executable advent-exe
     , hspec
     , matrix
     , parsec
+    , pqueue
     , split
     , time
     , vector
@@ -179,6 +185,10 @@ test-suite advent-test
       Advent2022.Day18.BaseSpec
       Advent2022.Day18.Part1Spec
       Advent2022.Day18.Part2Spec
+      Advent2022.Day19.BaseSpec
+      Advent2022.Day19.ParsingSpec
+      Advent2022.Day19.Part1Spec
+      Advent2022.Day19.Part2Spec
       Paths_advent
   hs-source-dirs:
       test
@@ -192,6 +202,7 @@ test-suite advent-test
     , hspec
     , matrix
     , parsec
+    , pqueue
     , split
     , time
     , vector
