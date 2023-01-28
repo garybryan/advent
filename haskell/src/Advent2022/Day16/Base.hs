@@ -1,86 +1,53 @@
 module Advent2022.Day16.Base
-  ( Valve (..),
-    ValveMap,
+  ( ValveName,
+    NamedValve,
+    Valve (..),
+    Valves,
     ValveIndex,
-    TableCell,
-    DPTable,
-    parseLine,
-    valveMapAndStartIndexFromLines,
-    maxPressure,
-    makeTable,
-    emptyCell,
-    isReachable,
-    potentialPressure,
-    amendIfReachable,
-    alreadyOpen,
-    openValve,
+    BitVector,
+    initialDistances,
+    shortestPaths,
+    maxPressureAndPressures,
+    valvesTotalRate,
+    Maxes,
   )
 where
 
-import qualified Data.IntSet as IntSet
-import Data.List (maximumBy)
+import Data.Bits
 import qualified Data.Map as Map
 import qualified Data.Matrix as M
-import Data.Maybe (catMaybes, fromJust, fromMaybe, mapMaybe)
-import Data.Ord (comparing)
+import Data.Maybe (mapMaybe)
+import qualified Data.PQueue.Max as PQ
+import qualified Data.Set as Set
 import qualified Data.Vector as V
-import Lib.Parsing (intParser, parseOrError)
-import Text.Parsec
-import Text.Parsec.String
+import Data.Word (Word64)
 
 {-
-  This looks like a cross between a graph search and a knapsack-style
-  optimisation problem: maximise the pressure given the time costs to do so.
+  I had a dynamic programming solution for this after finding plain
+  backtracking too slow, which was pretty fast and gave a correct answer for
+  part 1 but it was also hard to work with and was giving wrong answers for
+  part 2.
 
-  Could approximate with a greedy algorithm of always going for the valve with
-  the highest pressure, but that won't always be optimal, as shown in the
-  example.
-  (Although an optimal greedy algorithm might well be possible, if you do some
-  calculations to work out the next valve to open based on the pressure after
-  opening it multiplied by the remaining time minus the time to get there,
-  but knowing the time to get there would require all-pairs shortest paths...)
+  Inspired by day 19, I've redone it as branch-and-bound best-first search.
 
-  I tried a backtracking DFS solution first but it was just far too slow...
-  Bottom-up dynamic programming to the rescue.
+  The first implementation considered the choices at each state to be moving to
+  any adjacent valve or opening any unopened non-zero adjacent valve. This
+  worked, but took around 30 seconds to find the solution for the real data.
 
-  The graph is represented with adjacency lists. A dynamic programming table
-  with one row per minute and one column per valve is used to store the optimal
-  result so far for ending on a given valve at a given minute, and is filled in
-  row-by-row. Each cell stores the total pressure, the total flow rate for all
-  open valves, and the indices of the open valves.
+  To improve this, I returned to an idea I had before the DP solution but
+  didn't explore: pre-calculating all the distances between valves. This turns
+  the problem into simply choosing which order to open the valves in, with
+  the required times (distances) to open each valve from any other valve being
+  pre-calculated, so like with day 19 we can "fast-forward" in time and avoid
+  all the intermediary states. So a bit of extra polynomial work at the start
+  saves us a lot of non-polynomial work in the main part. This now runs in
+  < 0.2 seconds.
 
-  A bit like the knapsack problem, at each cell there is a choice of either
-  opening the valve or not opening it. Unlike knapsack, a valve can only be
-  opened if enough time has elapsed to reach it, which is simulated by storing
-  an Unreachable placeholder in cells until they can be reached from an
-  adjacent valve in the previous minute.
-
-  To avoid unnecessary work, valves with flow rate zero are not considered for
-  opening.
-
-  For opening a valve, all the possibilties for reaching it from adjacent nodes
-  are considered, as well as opening it from already being at it if it's not
-  already open, so that the optimal path to take before opening it can be
-  selected. Since moving to and then opening a valve takes 2 minutes, the rates
-  from adjacent valves on paths 2 minutes ago on which this valve has not
-  already been opened (and their pressures plus 2 times the rate at that time,
-  to get the current pressure at the time of opening this valve) are
-  considered.
-
-  For not opening a valve, choose the most optimal adjacent valve to arrive
-  from, considering the pressure a minute ago plus the rate to get the pressure
-  at this time. Not moving from the current valve would also be an option, but
-  never gives an optimal result so isn't considered.
-
-  The base case is the first minute, where the rate and pressure at the starting
-  valve are zero, and all others are unreachable.
-
-  Of all the choices, the optimal one is chosen by calculating what the
-  pressure would be at the end of the time limit if it were to be opened, by
-  adding the potential current pressure to the potential current rate
-  multiplied by the number of remaining minutes. Choosing just by pressure
-  isn't enough, because a high rate means that pressure will grow more quickly
-  over time.
+  A matrix of the shortest paths between all node pairs is built using the
+  Floyd-Warshall algorithm, which uses dynamic programming to incrementally
+  consider paths between vertices via other vertices to find the minimum such
+  paths. It could also be done by doing a BFS from each start node, but it's
+  less elegant and possibly slower if there are many edges.
 -}
 
 type ValveName = String
@@ -89,144 +56,152 @@ type ValveIndex = Int
 
 type AdjList = [ValveIndex]
 
+type Distances = M.Matrix Int
+
 type NamedValve = (ValveName, (Int, [ValveName]))
 
-data Valve = Valve Int AdjList deriving (Eq, Show)
+data Valve = Valve
+  { valveRate :: Int,
+    valveAdj :: AdjList
+  }
+  deriving (Eq, Show)
 
-type ValveMap = Map.Map ValveIndex Valve
+type Valves = V.Vector Valve
 
-valveNameParser :: Parser ValveName
-valveNameParser = many letter
+type Priority = Int
 
-sourceValveParser :: Parser ValveName
-sourceValveParser = string "Valve " *> valveNameParser
+type Queue = PQ.MaxQueue (Priority, State)
 
-flowParser :: Parser Int
-flowParser = string " has flow rate=" *> intParser
+-- The supplied data has 57 valves, so 64 bits just about covers us.
+type BitVector = Word64
 
-destValvesParser :: Parser [ValveName]
-destValvesParser = valveNameParser `sepBy` string ", "
+data State = State
+  { valveIndex :: Int,
+    rate :: Int,
+    pressure :: Int,
+    timeRemaining :: Int,
+    openedValves :: BitVector
+  }
+  deriving (Eq, Ord, Show)
 
-valveParser :: Parser (Int, [String])
-valveParser =
-  (,)
-    <$> flowParser
-    <*> ( string "; tunnel"
-            *> (string "s lead to valves " <|> string " leads to valve ")
-            *> destValvesParser
-        )
+type StateSet = Set.Set State
 
-lineParser :: Parser NamedValve
-lineParser = (,) <$> sourceValveParser <*> valveParser
+type Maxes = Map.Map BitVector Int
 
-parseLine :: String -> NamedValve
-parseLine = parseOrError lineParser
-
--- Store valves with indices rather than names, so they can be used in a table
--- (and for a minimal performance gain).
--- Valve "AA" isn't necessarily the first in the input, so we need to be able
--- to find its index in order to know where to start.
-valveMapAndStartIndex :: [NamedValve] -> (ValveMap, Int)
-valveMapAndStartIndex namesAndVals = (vm, index "AA")
+-- This does repeated scans of adjacency lists with `elem` when building the
+-- matrix, which could be avoided by using sets or adjacency matrix etc. but
+-- it's a drop in the ocean for overall complexity.
+initialDistances :: Valves -> Distances
+initialDistances valves = M.matrix n n oneIfAdjacent
   where
-    nameIndices = Map.fromList $ zip (map fst namesAndVals) [1 ..]
-    index name = fromMaybe (error $ "Unknown valve: " ++ name) $ Map.lookup name nameIndices
-    entry (name, (rate, adjNames)) = (index name, Valve rate (map index adjNames))
-    vm = Map.fromList $ map entry namesAndVals
+    n = V.length valves
+    oneIfAdjacent (row, col)
+      | row == col = 0
+      | (col - 1) `elem` valveAdj (valves V.! (row - 1)) = 1
+      | otherwise = -1
 
-valveMapAndStartIndexFromLines :: [String] -> (ValveMap, Int)
-valveMapAndStartIndexFromLines = valveMapAndStartIndex . map parseLine
-
-data TableCell
-  = Unreachable
-  | Cell Int Int IntSet.IntSet
-
-instance Show TableCell where
-  -- More compact output than the derived Show, handy for debugging.
-  show (Cell p r s) = show (p, r, IntSet.toList s)
-  show _ = "Unreachable"
-
-type DPTable = M.Matrix TableCell
-
-emptyCell :: TableCell
-emptyCell = Cell 0 0 IntSet.empty
-
-isReachable :: TableCell -> Bool
-isReachable Unreachable = False
-isReachable _ = True
-
-potentialPressure :: Int -> TableCell -> Int
-potentialPressure remainingMins (Cell p r _) = p + r * remainingMins
-potentialPressure _ _ = 0
-
-amendIfReachable :: ((Int, Int) -> (Int, Int)) -> DPTable -> (Int, Int) -> Maybe TableCell
-amendIfReachable f table pos = case table M.! pos of
-  Cell p r s -> Just $ Cell p' r' s
-    where
-      (p', r') = f (p, r)
-  _ -> Nothing
-
-alreadyOpen :: ValveIndex -> TableCell -> Bool
-alreadyOpen valveI (Cell _ _ ovs) = valveI `IntSet.member` ovs
-alreadyOpen _ _ = False
-
-openValve :: ValveIndex -> TableCell -> TableCell
-openValve valveI (Cell p r ovs) = Cell p r $ IntSet.insert valveI ovs
-openValve _ c = c
-
-nonOpenChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-nonOpenChoices table minute valveI vm
-  | minute == 1 && isReachable (table M.! (minute, valveI)) = [emptyCell]
-  | minute == 1 = []
-  | otherwise = mapMaybe prevWithCurPressure adj
+floydWarshall :: Distances -> Int -> Int -> Int -> Distances
+floydWarshall dists k i j
+  | k > n = dists
+  | i > n = floydWarshall dists (k + 1) 1 1
+  | j > n = floydWarshall dists k (i + 1) 1
+  | otherwise = floydWarshall dists' k i (j + 1)
   where
-    Valve _ adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r, r)) table (minute - 1, vi)
+    n = M.nrows dists
+    distIJ = dists M.! (i, j)
+    distIK = dists M.! (i, k)
+    distKJ = dists M.! (k, j)
+    distViaK = dists M.! (i, k) + dists M.! (k, j)
+    dists'
+      | distIK == -1 || distKJ == -1 = dists
+      | distIJ == -1 || distViaK < distIJ = M.setElem distViaK (i, j) dists
+      | otherwise = dists
 
-openChoices :: DPTable -> Int -> ValveIndex -> ValveMap -> [TableCell]
-openChoices table minute valveI vm
-  | rate == 0 = []
-  | otherwise = map (openValve valveI) choices
+shortestPaths :: Valves -> Distances
+shortestPaths valves = floydWarshall initialDists 1 1 1
   where
-    Valve rate adj = fromJust $ Map.lookup valveI vm
-    prevWithCurPressure vi = amendIfReachable (\(p, r) -> (p + r * 2, r + rate)) table (minute - 2, vi)
-    openCurValve = amendIfReachable (\(p, r) -> (p + r, r + rate)) table (minute - 1, valveI)
-    adjChoices
-      | minute <= 2 = []
-      | otherwise = map prevWithCurPressure adj
-    choices = filter (not . alreadyOpen valveI) $ catMaybes $ [openCurValve | minute > 1] ++ adjChoices
+    initialDists = initialDistances valves
 
--- This could be optimised to use O(V) space rather than O(V*M), since values
--- are only derived from the previous two rows, but that's an exercise for later.
--- First I should tidy it up and refactor some logic out of the massive "where" clause.
-dp :: Int -> Int -> ValveMap -> DPTable -> Int -> Int -> DPTable
-dp limit maxValveI vm table minute valveI
-  | minute > limit && valveI > maxValveI = table -- Finished bottom row.
-  | valveI > maxValveI = recurse table (minute + 1) 1 -- Finished a row; move onto next.
-  | otherwise = recurse table' minute (valveI + 1)
-  where
-    recurse = dp limit maxValveI vm
-    maxByPotentialPressure = maximumBy $ comparing (potentialPressure (limit - minute))
-    nocs = nonOpenChoices table minute valveI vm
-    ocs = openChoices table minute valveI vm
-    choices = nocs ++ ocs
-    table'
-      | null choices = table
-      | otherwise = M.setElem (maxByPotentialPressure choices) (minute, valveI) table
+lowerBound :: State -> Int
+lowerBound state = pressure state + rate state * timeRemaining state
 
-makeTable :: Int -> ValveMap -> Int -> DPTable
-makeTable limit vm startIndex = dp limit nValves vm table 1 1
-  where
-    table = M.matrix (limit + 1) nValves firstReachableOnly
-    firstReachableOnly pos
-      | pos == (1, startIndex) = emptyCell
-      | otherwise = Unreachable
-    nValves = Map.size vm
+{-
+ Optimistic bound: imagine we could open all remaining valves next.
+ The total rate (all valves open) has been pre-calculated, so the final
+ pressure would be the min bound + rate for all unopened valves for 2 minutes
+ later and onwards. Since stateChoices prunes any states before the last two
+ minutes, there's no risk of funkiness from negative numbers here.
+-}
+optBound :: Int -> State -> Int
+optBound totalRate state =
+  lowerBound state + (totalRate - rate state) * (timeRemaining state - 2)
 
-maxPressure :: Int -> ValveMap -> Int -> Int
-maxPressure limit vm startIndex = maximum $ mapMaybe pressure (V.toList finalRow)
+priority :: State -> Priority
+priority = lowerBound
+
+queueEntry :: State -> (Priority, State)
+queueEntry state = (priority state, state)
+
+-- O(V) function to get the indices of openable (not opened and rate > 0)
+-- valves from a bit vector. Could be improved by using IntSets, but bit
+-- vectors should be a big advantage for comparing sets in part 2...
+openableValveIndices :: BitVector -> Valves -> [Int]
+openableValveIndices opened = map fst . V.toList . V.filter snd . V.imap openableAndNotOpened
   where
-    finalTable = makeTable limit vm startIndex
-    finalRow = M.getRow (limit + 1) finalTable
-    pressure (Cell p _ _) = Just p
-    pressure _ = Nothing
+    openableAndNotOpened i v = (i, valveRate v > 0 && not (opened `testBit` i))
+
+{-
+  Get the state for moving to and opening a valve from the current state.
+
+  Don't bother opening a valve if the time remaining isn't sufficient to get to
+  it (1 minute per distance unit), open it (1 minute), and benefit from the
+  pressure release. Gives Nothing if there's not enough time.
+-}
+choice :: Valves -> Distances -> State -> Int -> Maybe State
+choice valves distances state openIndex
+  | timeToOpen < remaining =
+      Just
+        State
+          { valveIndex = openIndex,
+            timeRemaining = remaining - timeToOpen,
+            pressure = pressure state + timeToOpen * rate state,
+            rate = rate state + valveRate (valves V.! openIndex),
+            openedValves = openedValves state `setBit` openIndex
+          }
+  | otherwise = Nothing
+  where
+    remaining = timeRemaining state
+    curIndex = valveIndex state
+    timeToOpen = 1 + distances M.! (curIndex + 1, openIndex + 1)
+
+stateChoices :: Valves -> Distances -> State -> [State]
+stateChoices valves distances state = mapMaybe (choice valves distances state) openableIndices
+  where
+    openableIndices = openableValveIndices (openedValves state) valves
+
+bnb :: Int -> Valves -> Distances -> Bool -> Int -> Int -> StateSet -> Queue -> Maxes -> (Int, Maxes)
+bnb limit valves distances useUpperBound totalRate bound seen q maxes
+  | PQ.null q = (bound, maxes)
+  | otherwise = bnb limit valves distances useUpperBound totalRate bound' seen' q' maxes'
+  where
+    ((_, state), poppedQ) = PQ.deleteFindMax q
+    unseenAndInBound s = s `Set.notMember` seen && (not useUpperBound || optBound totalRate s > bound)
+    choices = filter unseenAndInBound $ stateChoices valves distances state
+    q' = foldr (PQ.insert . queueEntry) poppedQ choices
+    lb = lowerBound state
+    bound' = max bound lb
+    seen' = foldr Set.insert seen choices
+    maxes' = Map.insertWith max (openedValves state) lb maxes
+
+maxPressureAndPressures :: Int -> Valves -> Bool -> Int -> (Int, Maxes)
+maxPressureAndPressures limit valves useUpperBound startValveIndex =
+  bnb limit valves distances useUpperBound totalRate 0 initialSeen initialQ Map.empty
+  where
+    initialState = State startValveIndex 0 0 limit 0
+    initialQ = PQ.singleton $ queueEntry initialState
+    initialSeen = Set.singleton initialState
+    distances = shortestPaths valves
+    totalRate = valvesTotalRate valves
+
+valvesTotalRate :: Valves -> Int
+valvesTotalRate = sum . V.map valveRate

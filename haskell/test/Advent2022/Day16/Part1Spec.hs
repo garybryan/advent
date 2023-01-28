@@ -1,11 +1,11 @@
 module Advent2022.Day16.Part1Spec (spec) where
 
+import Advent2022.Day16.BaseSpec (valves)
 import Advent2022.Day16.Part1
 import Test.Hspec
 
 spec :: Spec
 spec = do
-  describe "doThing" $ do
-    it "does a thing" $ do
-      -- TODO update tests once logic has been split out from base to parts 1 and 2.
-      5 `shouldBe` 5
+  describe "maxPressureOneActor" $ do
+    it "finds the maximum possible pressure for 30 turns and one actor" $ do
+      maxPressureOneActor valves 0 `shouldBe` 1651

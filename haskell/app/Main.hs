@@ -29,17 +29,18 @@ import qualified Advent2022.Day11.Part2
 -- import qualified Advent2022.Day12.Part2
 import qualified Advent2022.Day13.Part1
 import qualified Advent2022.Day13.Part2
-import qualified Advent2022.Day14.Part1
-import qualified Advent2022.Day14.Part2
-import qualified Advent2022.Day15.Part1
-import qualified Advent2022.Day15.Part2
+-- import qualified Advent2022.Day14.Part1
+-- import qualified Advent2022.Day14.Part2
+-- import qualified Advent2022.Day15.Part1
+-- import qualified Advent2022.Day15.Part2
 import qualified Advent2022.Day16.Part1
+import qualified Advent2022.Day16.Part2
 import qualified Advent2022.Day17.Part1
 -- import qualified Advent2022.Day17.Part2
 import qualified Advent2022.Day18.Part1
 import qualified Advent2022.Day18.Part2
-import qualified Advent2022.Day19.Part1
-import qualified Advent2022.Day19.Part2
+-- import qualified Advent2022.Day19.Part1
+-- import qualified Advent2022.Day19.Part2
 import Lib.Run
 
 -- TODO implement a better run system:
@@ -134,6 +135,8 @@ main = do
 
   putStrLn "\n2022 day 16 part 1:"
   runOnFile Advent2022.Day16.Part1.run "data/2022/16.txt"
+  putStrLn "\n2022 day 16 part 2:"
+  runOnFile Advent2022.Day16.Part2.run "data/2022/16.txt"
 
   putStrLn "\n2022 day 17 part 1:"
   runOnFile Advent2022.Day17.Part1.run "data/2022/17.txt"
@@ -145,7 +148,7 @@ main = do
   putStrLn "\n2022 day 18 part 2:"
   runOnFile Advent2022.Day18.Part2.run "data/2022/18.txt"
 
-  putStrLn "\n2022 day 19 part 1:"
-  runOnFile Advent2022.Day19.Part1.run "data/2022/19.txt"
-  putStrLn "\n2022 day 19 part 2:"
-  runOnFile Advent2022.Day19.Part2.run "data/2022/19.txt"
+-- putStrLn "\n2022 day 19 part 1:"
+-- runOnFile Advent2022.Day19.Part1.run "data/2022/19.txt"
+-- putStrLn "\n2022 day 19 part 2:"
+-- runOnFile Advent2022.Day19.Part2.run "data/2022/19.txt"
