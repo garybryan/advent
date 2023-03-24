@@ -1,5 +1,5 @@
 import pytest
-from day22 import parse_map, parse_path
+from day22 import FacingDirection, Position, parse_map, parse_path, turn
 
 
 @pytest.fixture
@@ -230,3 +230,10 @@ def test_parse_map(map_lines):
             ".",
         ],
     ]
+
+
+def test_turn():
+    position = Position(4, 6, FacingDirection.R)
+
+    assert turn(position, "R") == Position(4, 6, FacingDirection.D)
+    assert turn(position, "L") == (4, 6, FacingDirection.U)
