@@ -117,3 +117,22 @@ def advance(board: Board, position: Position, count: int) -> Position:
         position = new_position
 
     return position
+
+
+def get_initial_position(board: Board) -> Position | None:
+    """
+    Get a position on the leftmost open tile on the top row of tiles, facing
+    right.
+
+    In both the test data and the real data, the top row always has tiles,
+    so we could cheat, but let's do it properly for completeness.
+    """
+
+    def get_first_tile_x(row: list[Tile]) -> int | None:
+        return next((x for x, tile in enumerate(row) if tile == "."), None)
+
+    for y, row in enumerate(board):
+        x = get_first_tile_x(row)
+
+        if x is not None:
+            return Position(y, x, Facing.R)

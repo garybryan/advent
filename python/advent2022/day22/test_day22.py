@@ -1,5 +1,6 @@
 import pytest
-from day22 import Facing, Position, advance, parse_board, parse_path, turn
+from day22 import (Facing, Position, advance, get_initial_position,
+                   parse_board, parse_path, turn)
 
 
 @pytest.fixture
@@ -261,3 +262,20 @@ def test_advance_wrap(board):
     assert advance(board, Position(4, 0, Facing.D), 6) == Position(6, 0, Facing.D)
     assert advance(board, Position(5, 0, Facing.L), 6) == Position(5, 9, Facing.L)
     assert advance(board, Position(5, 9, Facing.R), 6) == Position(5, 3, Facing.R)
+
+
+def test_get_initial_position(board):
+    assert get_initial_position(board) == Position(0, 8, Facing.R)
+
+    board_with_blank_first_row = [
+        [None, None, None],
+        [None, "#", "."],
+        [".", ",", "."],
+    ]
+    assert get_initial_position(board_with_blank_first_row) == Position(1, 2, Facing.R)
+
+    board_with_no_open_tiles = [
+        [None, None],
+        [None, "#"],
+    ]
+    assert get_initial_position(board_with_no_open_tiles) is None
