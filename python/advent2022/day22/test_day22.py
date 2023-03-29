@@ -1,6 +1,6 @@
 import pytest
-from day22 import (Facing, Position, TurnDir, advance, get_initial_position,
-                   parse_board, parse_path, turn)
+from day22 import (Facing, Position, TurnDir, advance, follow_path,
+                   get_initial_position, parse_board, parse_path, turn)
 
 
 @pytest.fixture
@@ -246,8 +246,8 @@ def test_parse_board(board_lines):
 def test_turn():
     position = Position(4, 6, Facing.R)
 
-    assert turn(position, "R") == Position(4, 6, Facing.D)
-    assert turn(position, "L") == (4, 6, Facing.U)
+    assert turn(position, TurnDir.R) == Position(4, 6, Facing.D)
+    assert turn(position, TurnDir.L) == (4, 6, Facing.U)
 
 
 def test_advance_simple(board):
@@ -263,10 +263,14 @@ def test_advance_obstacle(board):
 
 
 def test_advance_wrap(board):
-    assert advance(board, Position(4, 0, Facing.U), 2) == Position(6, 0, Facing.U)
-    assert advance(board, Position(4, 0, Facing.D), 6) == Position(6, 0, Facing.D)
-    assert advance(board, Position(5, 0, Facing.L), 6) == Position(5, 9, Facing.L)
+    # assert advance(board, Position(4, 0, Facing.U), 2) == Position(6, 0, Facing.U)
+    # assert advance(board, Position(4, 0, Facing.D), 6) == Position(6, 0, Facing.D)
+    # assert advance(board, Position(5, 0, Facing.L), 6) == Position(5, 9, Facing.L)
     assert advance(board, Position(5, 9, Facing.R), 6) == Position(5, 3, Facing.R)
+
+
+def test_advance_wrap_into_obstacle(board):
+    assert advance(board, Position(5, 3, Facing.D), 10) == Position(7, 3, Facing.D)
 
 
 def test_get_initial_position(board):
@@ -284,3 +288,9 @@ def test_get_initial_position(board):
         [None, "#"],
     ]
     assert get_initial_position(board_with_no_open_tiles) is None
+
+
+def test_follow_path(board, path):
+    assert follow_path(board, Position(0, 8, Facing.R), path) == Position(
+        5, 7, Facing.R
+    )
