@@ -69,10 +69,31 @@ def advance_one(board: Board, position: Position) -> Position:
     dy, dx = ADVANCE_VECTORS[position.facing]
     new_y, new_x = position.y + dy, position.x + dx
 
-    if board[new_y][new_x] == "#":
+    bottom_edge, right_edge = len(board) - 1, len(board[0]) - 1
+
+    if new_y < 0:
+        new_y = bottom_edge
+    elif new_y > bottom_edge:
+        new_y = 0
+
+    if new_x < 0:
+        new_x = right_edge
+    elif new_x > right_edge:
+        new_x = 0
+
+    new_tile = board[new_y][new_x]
+
+    if new_tile == "#":
         return position
 
-    return Position(new_y, new_x, position.facing)
+    new_position = Position(new_y, new_x, position.facing)
+
+    if new_tile is None:
+        # Very inefficient, quick-and-dirty method to wrap at a wall!
+        # Will improve later by pre-finding walls.
+        return advance_one(board, new_position)
+
+    return new_position
 
 
 def advance(board: Board, position: Position, count: int) -> Position:
