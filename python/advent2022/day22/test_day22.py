@@ -1,5 +1,5 @@
 import pytest
-from day22 import (Facing, Position, advance, get_initial_position,
+from day22 import (Facing, Position, TurnDir, advance, get_initial_position,
                    parse_board, parse_path, turn)
 
 
@@ -26,20 +26,30 @@ def board_lines():
     ]
 
 
+@pytest.fixture
+def board(board_lines):
+    return parse_board(board_lines)
+
+
+@pytest.fixture
+def path(path_text):
+    return parse_path(path_text)
+
+
 def test_parse_path(path_text):
     assert parse_path(path_text) == [
         10,
-        "R",
+        TurnDir.R,
         5,
-        "L",
+        TurnDir.L,
         5,
-        "R",
+        TurnDir.R,
         10,
-        "L",
+        TurnDir.L,
         4,
-        "R",
+        TurnDir.R,
         5,
-        "L",
+        TurnDir.L,
         5,
     ]
 
@@ -231,11 +241,6 @@ def test_parse_board(board_lines):
             ".",
         ],
     ]
-
-
-@pytest.fixture
-def board(board_lines):
-    return parse_board(board_lines)
 
 
 def test_turn():

@@ -2,9 +2,11 @@ import re
 from enum import Enum
 from typing import Literal, NamedTuple, cast
 
-TurnDirection = Literal["R", "L"]
+TurnDir = Enum("Turn", ["R", "L"])
 
-Move = str | int
+Move = TurnDir | int
+
+Path = list[Move]
 
 Tile = Literal[".", "#"] | None
 
@@ -24,13 +26,19 @@ class Position(NamedTuple):
     facing: Facing
 
 
-def parse_path(path_text: str) -> list[Move]:
+def parse_path(path_text: str) -> Path:
     parts = re.findall(r"(\d+|[RL])", path_text)
 
     def parse_part(part: str) -> Move:
         if part.isnumeric():
             return int(part)
-        return part
+
+        if part == "R":
+            return TurnDir.R
+
+        if part == "L":
+            return TurnDir.L
+        raise ValueError(f"Invalid path part: {part}")
 
     return list(map(parse_part, parts))
 
@@ -51,7 +59,7 @@ def parse_board(board_lines: list[str]) -> Board:
     return list(map(parse_line, board_lines))
 
 
-def turn(position: Position, direction: TurnDirection) -> Position:
+def turn(position: Position, direction: TurnDir) -> Position:
     turn_addend = 1 if direction == "R" else -1
     new_direction = Facing((position.facing.value + turn_addend) % 4)
     return Position(position.y, position.x, new_direction)
