@@ -69,14 +69,30 @@ def advance_one(board: Board, position: Position) -> Position:
     dy, dx = ADVANCE_VECTORS[position.facing]
     new_y, new_x = position.y + dy, position.x + dx
 
+    if board[new_y][new_x] == "#":
+        return position
+
     return Position(new_y, new_x, position.facing)
 
 
 def advance(board: Board, position: Position, count: int) -> Position:
+    """
+    Advance as far as possible in the current direction by `count`.
+    Stop moving if an obstacle is hit.
+
+    Potential optimisation: pre-compute data about obstacles and board edges,
+    allowing moves in O(1) time rather than O(count). Will do if the final
+    solution is slow.
+    """
     if count < 0:
         raise ValueError("Cannot advance by a negative number")
 
     for _ in range(count):
-        position = advance_one(board, position)
+        new_position = advance_one(board, position)
+
+        if new_position == position:
+            return position
+
+        position = new_position
 
     return position
