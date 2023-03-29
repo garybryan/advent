@@ -1,6 +1,5 @@
 import pytest
-from day22 import (FacingDirection, Position, advance, parse_board, parse_path,
-                   turn)
+from day22 import Facing, Position, advance, parse_board, parse_path, turn
 
 
 @pytest.fixture
@@ -239,46 +238,26 @@ def board(board_lines):
 
 
 def test_turn():
-    position = Position(4, 6, FacingDirection.R)
+    position = Position(4, 6, Facing.R)
 
-    assert turn(position, "R") == Position(4, 6, FacingDirection.D)
-    assert turn(position, "L") == (4, 6, FacingDirection.U)
+    assert turn(position, "R") == Position(4, 6, Facing.D)
+    assert turn(position, "L") == (4, 6, Facing.U)
 
 
 def test_advance_simple(board):
-    assert advance(board, Position(5, 1, FacingDirection.D), 2) == Position(
-        7, 1, FacingDirection.D
-    )
-    assert advance(board, Position(5, 1, FacingDirection.R), 2) == Position(
-        5, 3, FacingDirection.R
-    )
-    assert advance(board, Position(7, 5, FacingDirection.U), 2) == Position(
-        5, 5, FacingDirection.U
-    )
-    assert advance(board, Position(5, 3, FacingDirection.L), 2) == Position(
-        5, 1, FacingDirection.L
-    )
+    assert advance(board, Position(5, 1, Facing.D), 2) == Position(7, 1, Facing.D)
+    assert advance(board, Position(5, 1, Facing.R), 2) == Position(5, 3, Facing.R)
+    assert advance(board, Position(7, 5, Facing.U), 2) == Position(5, 5, Facing.U)
+    assert advance(board, Position(5, 3, Facing.L), 2) == Position(5, 1, Facing.L)
 
 
 def test_advance_obstacle(board):
-    assert advance(board, Position(4, 0, FacingDirection.R), 4) == Position(
-        4, 2, FacingDirection.R
-    )
-    assert advance(board, Position(7, 3, FacingDirection.U), 8) == Position(
-        5, 3, FacingDirection.U
-    )
+    assert advance(board, Position(4, 0, Facing.R), 4) == Position(4, 2, Facing.R)
+    assert advance(board, Position(7, 3, Facing.U), 8) == Position(5, 3, Facing.U)
 
 
 def test_advance_wrap(board):
-    assert advance(board, Position(4, 0, FacingDirection.U), 2) == Position(
-        6, 0, FacingDirection.U
-    )
-    assert advance(board, Position(4, 0, FacingDirection.D), 6) == Position(
-        6, 0, FacingDirection.D
-    )
-    assert advance(board, Position(5, 0, FacingDirection.L), 6) == Position(
-        5, 9, FacingDirection.L
-    )
-    assert advance(board, Position(5, 9, FacingDirection.R), 6) == Position(
-        5, 3, FacingDirection.R
-    )
+    assert advance(board, Position(4, 0, Facing.U), 2) == Position(6, 0, Facing.U)
+    assert advance(board, Position(4, 0, Facing.D), 6) == Position(6, 0, Facing.D)
+    assert advance(board, Position(5, 0, Facing.L), 6) == Position(5, 9, Facing.L)
+    assert advance(board, Position(5, 9, Facing.R), 6) == Position(5, 3, Facing.R)

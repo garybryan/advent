@@ -11,7 +11,7 @@ Tile = Literal[".", "#"] | None
 Board = list[list[Tile]]
 
 
-class FacingDirection(Enum):
+class Facing(Enum):
     R = 0
     D = 1
     L = 2
@@ -21,7 +21,7 @@ class FacingDirection(Enum):
 class Position(NamedTuple):
     y: int
     x: int
-    facing: FacingDirection
+    facing: Facing
 
 
 def parse_path(path_text: str) -> list[Move]:
@@ -53,15 +53,15 @@ def parse_board(board_lines: list[str]) -> Board:
 
 def turn(position: Position, direction: TurnDirection) -> Position:
     turn_addend = 1 if direction == "R" else -1
-    new_direction = FacingDirection((position.facing.value + turn_addend) % 4)
+    new_direction = Facing((position.facing.value + turn_addend) % 4)
     return Position(position.y, position.x, new_direction)
 
 
-ADVANCE_VECTORS: dict[FacingDirection, tuple[int, int]] = {
-    FacingDirection.R: (0, 1),
-    FacingDirection.D: (1, 0),
-    FacingDirection.L: (0, -1),
-    FacingDirection.U: (-1, 0),
+ADVANCE_VECTORS: dict[Facing, tuple[int, int]] = {
+    Facing.R: (0, 1),
+    Facing.D: (1, 0),
+    Facing.L: (0, -1),
+    Facing.U: (-1, 0),
 }
 
 
