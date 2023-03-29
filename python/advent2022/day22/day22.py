@@ -65,6 +65,16 @@ ADVANCE_VECTORS: dict[FacingDirection, tuple[int, int]] = {
 }
 
 
-def advance(board: Board, position: Position, count: int) -> Position:
+def advance_one(board: Board, position: Position) -> Position:
     dx, dy = ADVANCE_VECTORS[position.facing]
-    return Position(position.x + dx * count, position.y + dy * count, position.facing)
+    return Position(position.x + dx, position.y + dy, position.facing)
+
+
+def advance(board: Board, position: Position, count: int) -> Position:
+    if count < 0:
+        raise ValueError("Cannot advance by a negative number")
+
+    for _ in range(count):
+        position = advance_one(board, position)
+
+    return position
