@@ -19,8 +19,8 @@ class FacingDirection(Enum):
 
 
 class Position(NamedTuple):
-    x: int
     y: int
+    x: int
     facing: FacingDirection
 
 
@@ -54,20 +54,22 @@ def parse_board(board_lines: list[str]) -> Board:
 def turn(position: Position, direction: TurnDirection) -> Position:
     turn_addend = 1 if direction == "R" else -1
     new_direction = FacingDirection((position.facing.value + turn_addend) % 4)
-    return Position(position.x, position.y, new_direction)
+    return Position(position.y, position.x, new_direction)
 
 
 ADVANCE_VECTORS: dict[FacingDirection, tuple[int, int]] = {
-    FacingDirection.R: (1, 0),
-    FacingDirection.D: (0, 1),
-    FacingDirection.L: (-1, 0),
-    FacingDirection.U: (0, -1),
+    FacingDirection.R: (0, 1),
+    FacingDirection.D: (1, 0),
+    FacingDirection.L: (0, -1),
+    FacingDirection.U: (-1, 0),
 }
 
 
 def advance_one(board: Board, position: Position) -> Position:
-    dx, dy = ADVANCE_VECTORS[position.facing]
-    return Position(position.x + dx, position.y + dy, position.facing)
+    dy, dx = ADVANCE_VECTORS[position.facing]
+    new_y, new_x = position.y + dy, position.x + dx
+
+    return Position(new_y, new_x, position.facing)
 
 
 def advance(board: Board, position: Position, count: int) -> Position:

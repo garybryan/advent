@@ -246,15 +246,15 @@ def test_turn():
 
 
 def test_advance_simple(board):
-    assert advance(board, Position(1, 5, FacingDirection.R), 2) == Position(
-        3, 5, FacingDirection.R
+    assert advance(board, Position(5, 1, FacingDirection.D), 2) == Position(
+        7, 1, FacingDirection.D
     )
-    assert advance(board, Position(1, 5, FacingDirection.D), 2) == Position(
-        1, 7, FacingDirection.D
+    assert advance(board, Position(5, 1, FacingDirection.R), 2) == Position(
+        5, 3, FacingDirection.R
     )
-    assert advance(board, Position(5, 5, FacingDirection.L), 2) == Position(
-        3, 5, FacingDirection.L
+    assert advance(board, Position(7, 5, FacingDirection.U), 2) == Position(
+        5, 5, FacingDirection.U
     )
-    assert advance(board, Position(1, 5, FacingDirection.U), 2) == Position(
-        1, 3, FacingDirection.U
+    assert advance(board, Position(5, 3, FacingDirection.L), 2) == Position(
+        5, 1, FacingDirection.L
     )
