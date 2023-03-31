@@ -52,7 +52,7 @@ def parse_board(board_lines: list[str]) -> Board:
         if char in (".", "#"):
             return char
 
-        raise ValueError(f"Invalid map character: {char}")
+        raise ValueError(f"Invalid map character: {repr(char)}")
 
     def parse_line(line: str) -> list[Tile]:
         return cast(list[Tile], list(map(parse_char, line)))
@@ -61,6 +61,7 @@ def parse_board(board_lines: list[str]) -> Board:
 
 
 def parse_lines(lines: list[str]) -> tuple[Board, Path]:
+    # Assumes whole file is read into memory, which is fine for the size here.
     board_lines, path_line = lines[:-2], lines[-1]
     return parse_board(board_lines), parse_path(path_line)
 
@@ -170,5 +171,30 @@ def make_move(board: Board, position: Position, move: Move) -> Position:
     return turn(position, move)
 
 
-def follow_path(board: Board, position: Position, path: Path) -> Position:
+def follow_path(board: Board, path: Path, position: Position | None = None) -> Position:
+    if position is None:
+        position = get_initial_position(board)
+
+    if position is None:
+        raise ValueError("Board has no initial position")
+
     return reduce(partial(make_move, board), path, position)
+
+
+def position_password(position: Position) -> int:
+    return 1000 * (position.y + 1) + 4 * (position.x + 1) + position.facing.value
+
+
+def parse_file(filename: str) -> tuple[Board, Path]:
+    with open(filename) as f:
+        return parse_lines(f.read().splitlines())
+
+
+def part1(filename: str = "data.txt") -> None:
+    board, path = parse_file(filename)
+    password = position_password(follow_path(board, path))
+    print("Final position password", password)
+
+
+if __name__ == "__main__":
+    part1()

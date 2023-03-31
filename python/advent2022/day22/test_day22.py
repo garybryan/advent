@@ -1,7 +1,7 @@
 import pytest
 from day22 import (Facing, Position, TurnDir, advance, follow_path,
                    get_initial_position, parse_board, parse_lines, parse_path,
-                   turn)
+                   position_password, turn)
 
 
 @pytest.fixture
@@ -301,6 +301,10 @@ def test_get_initial_position(board):
 
 
 def test_follow_path(board, path):
-    assert follow_path(board, Position(0, 8, Facing.R), path) == Position(
+    assert follow_path(board, path, Position(0, 8, Facing.R)) == Position(
         5, 7, Facing.R
     )
+
+
+def test_position_password():
+    assert position_password(Position(5, 7, Facing.R)) == 6032
