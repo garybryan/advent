@@ -87,13 +87,15 @@ def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
     """
     dy, dx = ADVANCE_VECTORS[facing]
 
-    bottom_edge, right_edge = len(board) - 1, len(board[y]) - 1
+    bottom_edge = len(board) - 1
 
     while True:
         if y < 0:
             y = bottom_edge
         elif y > bottom_edge:
             y = 0
+
+        right_edge = len(board[y]) - 1
 
         if x < 0:
             x = right_edge
