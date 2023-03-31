@@ -60,6 +60,11 @@ def parse_board(board_lines: list[str]) -> Board:
     return list(map(parse_line, board_lines))
 
 
+def parse_lines(lines: list[str]) -> tuple[Board, Path]:
+    board_lines, path_line = lines[:-2], lines[-1]
+    return parse_board(board_lines), parse_path(path_line)
+
+
 def turn(position: Position, direction: TurnDir) -> Position:
     turn_addend = 1 if direction == TurnDir.R else -1
     new_direction = Facing((position.facing.value + turn_addend) % 4)
