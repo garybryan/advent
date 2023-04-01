@@ -83,7 +83,7 @@ ADVANCE_VECTORS: dict[Facing, tuple[int, int]] = {
 def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
     """
     Wrap around the board in the given direction if the given position is past
-    an edge or wall.
+    a board edge or inside edge.
     """
     dy, dx = ADVANCE_VECTORS[facing]
 
@@ -98,9 +98,9 @@ def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
         right_edge = len(board[y]) - 1
 
         # Detail that caught me out: if moving up or down to a row shorter than the
-        # starting row, that row needs to be skipped as it is a wall. Without
-        # this x <= right_edge check, it was causing a horizontal wrap in this
-        # case.
+        # starting row, that row needs to be skipped as it is an inside edge.
+        # Without this x <= right_edge check, it was causing a horizontal wrap
+        # in this case.
         if dy == 0 or x <= right_edge:
             if x < 0:
                 x = right_edge
@@ -120,7 +120,6 @@ def advance_one(board: Board, position: Position) -> Position:
     y, x = position.y + dy, position.x + dx
 
     y, x = wrap(board, y, x, position.facing)
-    print("wrap", y, x)
 
     new_position = Position(y, x, position.facing)
     new_tile = board[y][x]
@@ -134,11 +133,11 @@ def advance_one(board: Board, position: Position) -> Position:
 def advance(board: Board, position: Position, count: int) -> Position:
     """
     Advance as far as possible in the current direction by `count`.
-    Stop moving if an obstacle is hit.
+    Stop moving if a wall is hit.
 
-    Potential optimisation: pre-compute data about obstacles, walls, and board
-    edges, allowing moves in O(1) time rather than O(count). Will do if the
-    final solution is slow.
+    Potential optimisation: pre-compute data about walls and edges,
+    allowing moves in O(1) time rather than O(count). Will do if the final
+    solution is slow.
     """
     if count < 0:
         raise ValueError("Cannot advance by a negative number")
@@ -155,7 +154,6 @@ def advance(board: Board, position: Position, count: int) -> Position:
 
 
 def make_move(board: Board, position: Position, move: Move) -> Position:
-    print(position, move)
     if isinstance(move, int):
         return advance(board, position, move)
     return turn(position, move)
