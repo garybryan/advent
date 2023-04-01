@@ -80,11 +80,12 @@ ADVANCE_VECTORS: dict[Facing, tuple[int, int]] = {
 }
 
 
-def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
+def wrap(board: Board, position: Position) -> Position:
     """
     Wrap around the board in the given direction if the given position is past
     a board edge or inside edge.
     """
+    y, x, facing = position
     dy, dx = ADVANCE_VECTORS[facing]
 
     bottom_edge = len(board) - 1
@@ -112,7 +113,7 @@ def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
 
         y, x = y + dy, x + dx
 
-    return y, x
+    return Position(y, x, facing)
 
 
 def advance(board: Board, position: Position, count: int) -> Position:
@@ -130,12 +131,14 @@ def advance(board: Board, position: Position, count: int) -> Position:
     dy, dx = ADVANCE_VECTORS[position.facing]
 
     for _ in range(count):
-        y, x = wrap(board, position.y + dy, position.x + dx, position.facing)
+        next_position = wrap(
+            board, Position(position.y + dy, position.x + dx, position.facing)
+        )
 
-        if board[y][x] == "#":
+        if board[next_position.y][next_position.x] == "#":
             return position
 
-        position = Position(y, x, position.facing)
+        position = next_position
 
     return position
 
