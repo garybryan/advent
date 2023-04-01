@@ -97,13 +97,18 @@ def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
 
         right_edge = len(board[y]) - 1
 
-        if x < 0:
-            x = right_edge
-        elif x > right_edge:
-            x = 0
+        # Detail that caught me out: if moving up or down to a row shorter than the
+        # starting row, that row needs to be skipped as it is a wall. Without
+        # this x <= right_edge check, it was causing a horizontal wrap in this
+        # case.
+        if dy == 0 or x <= right_edge:
+            if x < 0:
+                x = right_edge
+            elif x > right_edge:
+                x = 0
 
-        if board[y][x] is not None:
-            break
+            if board[y][x] is not None:
+                break
 
         y, x = y + dy, x + dx
 
@@ -115,6 +120,7 @@ def advance_one(board: Board, position: Position) -> Position:
     y, x = position.y + dy, position.x + dx
 
     y, x = wrap(board, y, x, position.facing)
+    print("wrap", y, x)
 
     new_position = Position(y, x, position.facing)
     new_tile = board[y][x]
@@ -148,26 +154,8 @@ def advance(board: Board, position: Position, count: int) -> Position:
     return position
 
 
-def get_initial_position(board: Board) -> Position | None:
-    """
-    Get a position on the leftmost open tile on the top row of tiles, facing
-    right.
-
-    In both the test data and the real data, the top row always has tiles,
-    so we could cheat, but let's do it properly for completeness.
-    """
-
-    def get_first_tile_x(row: list[Tile]) -> int | None:
-        return next((x for x, tile in enumerate(row) if tile == "."), None)
-
-    for y, row in enumerate(board):
-        x = get_first_tile_x(row)
-
-        if x is not None:
-            return Position(y, x, Facing.R)
-
-
 def make_move(board: Board, position: Position, move: Move) -> Position:
+    print(position, move)
     if isinstance(move, int):
         return advance(board, position, move)
     return turn(position, move)
@@ -185,6 +173,25 @@ def follow_path(board: Board, path: Path, position: Position | None = None) -> P
 
 def position_password(position: Position) -> int:
     return 1000 * (position.y + 1) + 4 * (position.x + 1) + position.facing.value
+
+
+def get_initial_position(board: Board) -> Position | None:
+    """
+    Get a position on the leftmost open tile on the top row of tiles, facing
+    right.
+
+    In both the test data and the real data, the top row always has tiles,
+    so we could cheat, but let's do it properly for completeness.
+    """
+
+    def get_first_tile_x(row: list[Tile]) -> int | None:
+        return next((x for x, tile in enumerate(row) if tile == "."), None)
+
+    for y, row in enumerate(board):
+        x = get_first_tile_x(row)
+
+        if x is not None:
+            return Position(y, x, Facing.R)
 
 
 def parse_file(filename: str) -> tuple[Board, Path]:

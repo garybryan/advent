@@ -275,8 +275,11 @@ def test_advance_obstacle(board):
 def test_advance_wrap_wall(board):
     assert advance(board, Position(5, 9, Facing.R), 6) == Position(5, 3, Facing.R)
     assert advance(board, Position(4, 0, Facing.U), 2) == Position(6, 0, Facing.U)
-    assert advance(board, Position(4, 0, Facing.D), 6) == Position(6, 0, Facing.D)
+    assert advance(board, Position(4, 1, Facing.D), 6) == Position(6, 1, Facing.D)
     assert advance(board, Position(3, 8, Facing.L), 1) == Position(3, 11, Facing.L)
+
+    # Moving up (or down) to a row shorter than the current one.
+    assert advance(board, Position(8, 15, Facing.U), 2) == Position(10, 15, Facing.U)
 
 
 def test_advance_wrap_edge(board):
