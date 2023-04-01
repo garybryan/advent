@@ -115,21 +115,6 @@ def wrap(board: Board, y: int, x: int, facing: Facing) -> tuple[int, int]:
     return y, x
 
 
-def advance_one(board: Board, position: Position) -> Position:
-    dy, dx = ADVANCE_VECTORS[position.facing]
-    y, x = position.y + dy, position.x + dx
-
-    y, x = wrap(board, y, x, position.facing)
-
-    new_position = Position(y, x, position.facing)
-    new_tile = board[y][x]
-
-    if new_tile == "#":
-        return position
-
-    return new_position
-
-
 def advance(board: Board, position: Position, count: int) -> Position:
     """
     Advance as far as possible in the current direction by `count`.
@@ -142,13 +127,15 @@ def advance(board: Board, position: Position, count: int) -> Position:
     if count < 0:
         raise ValueError("Cannot advance by a negative number")
 
-    for _ in range(count):
-        new_position = advance_one(board, position)
+    dy, dx = ADVANCE_VECTORS[position.facing]
 
-        if new_position == position:
+    for _ in range(count):
+        y, x = wrap(board, position.y + dy, position.x + dx, position.facing)
+
+        if board[y][x] == "#":
             return position
 
-        position = new_position
+        position = Position(y, x, position.facing)
 
     return position
 
