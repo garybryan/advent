@@ -257,7 +257,7 @@ def test_turn():
     position = Position(4, 6, Facing.R)
 
     assert turn(position, TurnDir.R) == Position(4, 6, Facing.D)
-    assert turn(position, TurnDir.L) == (4, 6, Facing.U)
+    assert turn(position, TurnDir.L) == Position(4, 6, Facing.U)
 
 
 def test_advance_simple(board):
@@ -281,7 +281,7 @@ def test_advance_wrap_wall(board):
 
 def test_advance_wrap_edge(board):
     assert advance(board, Position(8, 13, Facing.R), 4) == Position(8, 9, Facing.R)
-    assert advance(board, Position(1, 9, Facing.U), 3) == Position(10, 9, Facing.U)
+    assert advance(board, Position(1, 8, Facing.U), 3) == Position(10, 8, Facing.U)
     assert advance(board, Position(11, 8, Facing.D), 2) == Position(1, 8, Facing.D)
     assert advance(board, Position(5, 0, Facing.L), 6) == Position(5, 9, Facing.L)
 
