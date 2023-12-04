@@ -13,7 +13,7 @@ packages:
     hackage: dequeue-0.1.12
 snapshots:
 - completed:
-    sha256: b37c0abab16c7de352c45b85f8ecc8530b084209a2c42987a96c92b4a5e3cd65
-    size: 648924
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/13.yaml
-  original: lts-20.13
+    sha256: 8809197159ce65ec2d66f91982e4844ad0c2cbd1126df42146dd103c0ea6cac0
+    size: 640063
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/21/23.yaml
+  original: lts-21.23
